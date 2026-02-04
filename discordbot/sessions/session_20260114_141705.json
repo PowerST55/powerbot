@@ -1,0 +1,17 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 0.52,
+        "timestamp": "2026-01-14T14:17:36.384346-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/qrwVthk38b0?list=RDKK3KXAECte4",
+        "tiempo_sesion": 0.86,
+        "timestamp": "2026-01-14T14:17:56.413675-05:00"
+    }
+]

@@ -1,0 +1,253 @@
+[
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/shorts/6xW2dlYI-ME",
+        "tiempo_sesion": 65.48,
+        "timestamp": "2026-01-19T14:12:53.703448-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 66.43,
+        "timestamp": "2026-01-19T14:13:50.912600-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=qYAONSDnMrc&",
+        "tiempo_sesion": 74.42,
+        "timestamp": "2026-01-19T14:21:50.006490-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=myDIeOjqQos&",
+        "tiempo_sesion": 76.36,
+        "timestamp": "2026-01-19T14:23:46.689396-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=Qkc5g3h-rdU&",
+        "tiempo_sesion": 78.84,
+        "timestamp": "2026-01-19T14:26:15.538820-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 80.27,
+        "timestamp": "2026-01-19T14:27:41.132790-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=fJ9rUzIMcZQ&",
+        "tiempo_sesion": 81.34,
+        "timestamp": "2026-01-19T14:28:45.434687-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=6pR2wkx2K8E&",
+        "tiempo_sesion": 83.34,
+        "timestamp": "2026-01-19T14:30:45.096096-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=MaaEVFNDQLo&",
+        "tiempo_sesion": 84.77,
+        "timestamp": "2026-01-19T14:32:11.283892-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=FslVE_iHWXg&",
+        "tiempo_sesion": 87.49,
+        "timestamp": "2026-01-19T14:34:54.503652-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=cD5T1Y4b7wA&",
+        "tiempo_sesion": 89.16,
+        "timestamp": "2026-01-19T14:36:34.293499-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=gaxbVfsoF6Q&",
+        "tiempo_sesion": 90.94,
+        "timestamp": "2026-01-19T14:38:21.303589-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=cD5T1Y4b7wA&",
+        "tiempo_sesion": 94.17,
+        "timestamp": "2026-01-19T14:41:34.829916-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=EVgd4gvY0hU&",
+        "tiempo_sesion": 95.18,
+        "timestamp": "2026-01-19T14:42:35.674791-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=cD5T1Y4b7wA&",
+        "tiempo_sesion": 99.13,
+        "timestamp": "2026-01-19T14:46:32.363918-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=Lg2UXs9SDx4",
+        "tiempo_sesion": 99.32,
+        "timestamp": "2026-01-19T14:46:44.110708-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=uKv1lzsYe0o&",
+        "tiempo_sesion": 101.23,
+        "timestamp": "2026-01-19T14:48:38.399882-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=BfqGLAqugxM&",
+        "tiempo_sesion": 102.41,
+        "timestamp": "2026-01-19T14:49:49.654262-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=8rjxkHevoWY&",
+        "tiempo_sesion": 103.88,
+        "timestamp": "2026-01-19T14:51:17.588796-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=6nQPFOIsjLk&",
+        "tiempo_sesion": 106.65,
+        "timestamp": "2026-01-19T14:54:04.068862-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=qBO6Zc2lwhY&",
+        "tiempo_sesion": 107.87,
+        "timestamp": "2026-01-19T14:55:17.151744-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=6nQPFOIsjLk&",
+        "tiempo_sesion": 109.92,
+        "timestamp": "2026-01-19T14:57:19.856874-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=wgvqiH7iCRo&",
+        "tiempo_sesion": 110.17,
+        "timestamp": "2026-01-19T14:57:34.912664-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=JWRlTezTF2k&",
+        "tiempo_sesion": 111.97,
+        "timestamp": "2026-01-19T14:59:23.064155-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 3
+        },
+        "tiempo_sesion": 112.78,
+        "timestamp": "2026-01-19T15:00:11.500755-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 1
+        },
+        "tiempo_sesion": 112.95,
+        "timestamp": "2026-01-19T15:00:22.090398-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=wgvqiH7iCRo&",
+        "tiempo_sesion": 114.9,
+        "timestamp": "2026-01-19T15:02:18.925921-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=IdK4vhFOgq0&",
+        "tiempo_sesion": 114.99,
+        "timestamp": "2026-01-19T15:02:24.102670-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 115.08,
+        "timestamp": "2026-01-19T15:02:29.814548-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/shorts/y6Sm3zgDsJ0",
+        "tiempo_sesion": 116.45,
+        "timestamp": "2026-01-19T15:03:52.035064-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 116.53,
+        "timestamp": "2026-01-19T15:03:56.947047-05:00"
+    }
+]

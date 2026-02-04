@@ -1,0 +1,43 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 0.29,
+        "timestamp": "2026-01-04T18:54:47.976252-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "activado"
+        },
+        "tiempo_sesion": 1.45,
+        "timestamp": "2026-01-04T18:55:57.473151-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "desactivado"
+        },
+        "tiempo_sesion": 2.4,
+        "timestamp": "2026-01-04T18:56:54.009564-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 6.12,
+        "timestamp": "2026-01-04T19:00:37.318669-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 6.19,
+        "timestamp": "2026-01-04T19:00:41.959861-05:00"
+    }
+]

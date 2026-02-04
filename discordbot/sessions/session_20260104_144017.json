@@ -1,0 +1,23 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/7RpU6ch3ndE",
+        "tiempo_sesion": 0.52,
+        "timestamp": "2026-01-04T14:40:49.367413-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=4WIB69EQnTQ&list=PLOhfwzTL30j6vEa1Mn4cksySYM-ar83vf",
+        "tiempo_sesion": 2.52,
+        "timestamp": "2026-01-04T14:42:49.332693-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/OeO6K-valNo?list=RDOeO6K-valNo",
+        "tiempo_sesion": 202.0,
+        "timestamp": "2026-01-04T18:02:17.890601-05:00"
+    }
+]

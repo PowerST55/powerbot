@@ -1,0 +1,17 @@
+[
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=KeX62UqZW-g",
+        "tiempo_sesion": 2.83,
+        "timestamp": "2026-01-25T22:58:43.688826-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 2.88,
+        "timestamp": "2026-01-25T22:58:46.799196-05:00"
+    }
+]

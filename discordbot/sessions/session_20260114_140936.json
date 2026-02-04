@@ -1,0 +1,58 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 0.59,
+        "timestamp": "2026-01-14T14:10:11.760515-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 1.0,
+        "timestamp": "2026-01-14T14:10:35.961099-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 1.41,
+        "timestamp": "2026-01-14T14:11:00.879095-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 1.8,
+        "timestamp": "2026-01-14T14:11:24.426321-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.58,
+        "timestamp": "2026-01-14T14:12:10.808142-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 3.75,
+        "timestamp": "2026-01-14T14:13:21.296737-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 4.1,
+        "timestamp": "2026-01-14T14:13:42.439123-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 5.27,
+        "timestamp": "2026-01-14T14:14:52.273064-05:00"
+    }
+]

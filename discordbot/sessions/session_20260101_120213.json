@@ -1,0 +1,112 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 1.19,
+        "timestamp": "2026-01-01T12:03:24.453223-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/xUYZ6ViKFh8?list=RDxUYZ6ViKFh8",
+        "tiempo_sesion": 1.66,
+        "timestamp": "2026-01-01T12:03:52.608334-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 1.91,
+        "timestamp": "2026-01-01T12:04:07.660629-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 2.0,
+        "timestamp": "2026-01-01T12:04:13.315198-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 2.07,
+        "timestamp": "2026-01-01T12:04:17.355837-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 2
+        },
+        "tiempo_sesion": 3.61,
+        "timestamp": "2026-01-01T12:05:49.899748-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=T_NKi5KHUdI&",
+        "tiempo_sesion": 47.27,
+        "timestamp": "2026-01-01T12:49:29.390579-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 47.51,
+        "timestamp": "2026-01-01T12:49:43.863038-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 48.61,
+        "timestamp": "2026-01-01T12:50:49.802867-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 82.65,
+        "timestamp": "2026-01-01T13:24:52.227906-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 82.77,
+        "timestamp": "2026-01-01T13:24:59.140080-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 83.08,
+        "timestamp": "2026-01-01T13:25:17.736413-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=aHYvmY3nV5U&",
+        "tiempo_sesion": 130.34,
+        "timestamp": "2026-01-01T14:12:33.725211-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 131.46,
+        "timestamp": "2026-01-01T14:13:40.883386-05:00"
+    }
+]

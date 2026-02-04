@@ -1,0 +1,128 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 0.1,
+        "timestamp": "2026-01-04T19:11:03.389617-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 0.2,
+        "timestamp": "2026-01-04T19:11:09.472173-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 0.3,
+        "timestamp": "2026-01-04T19:11:14.963182-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.65,
+        "timestamp": "2026-01-04T19:13:36.497884-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.79,
+        "timestamp": "2026-01-04T19:13:44.505521-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 3.7,
+        "timestamp": "2026-01-04T19:14:39.002325-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 3.88,
+        "timestamp": "2026-01-04T19:14:50.284340-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://youtu.be/1L45oJN5c6c",
+        "tiempo_sesion": 4.94,
+        "timestamp": "2026-01-04T19:15:53.418067-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 5.24,
+        "timestamp": "2026-01-04T19:16:11.702994-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 5.47,
+        "timestamp": "2026-01-04T19:16:25.496568-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 1
+        },
+        "tiempo_sesion": 5.53,
+        "timestamp": "2026-01-04T19:16:29.210620-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 5.61,
+        "timestamp": "2026-01-04T19:16:33.972867-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=tCDvOQI3pco",
+        "tiempo_sesion": 6.46,
+        "timestamp": "2026-01-04T19:17:25.146730-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "activado"
+        },
+        "tiempo_sesion": 6.49,
+        "timestamp": "2026-01-04T19:17:26.853621-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "desactivado"
+        },
+        "tiempo_sesion": 6.85,
+        "timestamp": "2026-01-04T19:17:48.385202-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 7.65,
+        "timestamp": "2026-01-04T19:18:36.067773-05:00"
+    }
+]

@@ -1,0 +1,32 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 0.6,
+        "timestamp": "2026-02-03T21:51:17.835970-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/AqI97zHMoQw",
+        "tiempo_sesion": 2.62,
+        "timestamp": "2026-02-03T21:53:19.494574-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/19y8YTbvri8?list=PL-i04rOU1AKbjcSUQpVev-qrmKQhEvwm6",
+        "tiempo_sesion": 6.68,
+        "timestamp": "2026-02-03T21:57:22.653894-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 10.15,
+        "timestamp": "2026-02-03T22:00:50.886501-05:00"
+    }
+]

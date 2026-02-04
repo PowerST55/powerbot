@@ -1,0 +1,16 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 1.04,
+        "timestamp": "2026-01-04T19:06:36.771172-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.52,
+        "timestamp": "2026-01-04T19:08:05.592497-05:00"
+    }
+]

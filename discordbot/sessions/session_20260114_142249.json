@@ -1,0 +1,23 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 1.28,
+        "timestamp": "2026-01-14T14:24:06.040625-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 1.35,
+        "timestamp": "2026-01-14T14:24:10.049170-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 1.41,
+        "timestamp": "2026-01-14T14:24:13.634738-05:00"
+    }
+]

@@ -1,0 +1,157 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/0J3AL1PXoQY?list=RD0J3AL1PXoQY",
+        "tiempo_sesion": 0.23,
+        "timestamp": "2026-01-04T18:28:29.452560-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 1.12,
+        "timestamp": "2026-01-04T18:29:22.949381-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "activado"
+        },
+        "tiempo_sesion": 1.52,
+        "timestamp": "2026-01-04T18:29:47.081968-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "desactivado"
+        },
+        "tiempo_sesion": 1.68,
+        "timestamp": "2026-01-04T18:29:56.491898-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=deifpvJG5N4&list=RDdeifpvJG5N4&start_radio=1",
+        "tiempo_sesion": 2.02,
+        "timestamp": "2026-01-04T18:30:17.102643-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/OsAcFu1cLiY?list=RDdeifpvJG5N4",
+        "tiempo_sesion": 2.42,
+        "timestamp": "2026-01-04T18:30:40.940716-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.63,
+        "timestamp": "2026-01-04T18:30:53.929014-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/r6NLMSUtQzg?list=RDr6NLMSUtQzg",
+        "tiempo_sesion": 2.86,
+        "timestamp": "2026-01-04T18:31:07.386671-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.92,
+        "timestamp": "2026-01-04T18:31:11.295597-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "activado"
+        },
+        "tiempo_sesion": 3.98,
+        "timestamp": "2026-01-04T18:32:14.945484-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "desactivado"
+        },
+        "tiempo_sesion": 4.3,
+        "timestamp": "2026-01-04T18:32:34.121730-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "activado"
+        },
+        "tiempo_sesion": 4.47,
+        "timestamp": "2026-01-04T18:32:44.194490-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 4.52,
+        "timestamp": "2026-01-04T18:32:47.367471-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 1
+        },
+        "tiempo_sesion": 4.8,
+        "timestamp": "2026-01-04T18:33:03.742958-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 4.9,
+        "timestamp": "2026-01-04T18:33:09.974292-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://youtu.be/DeKLpgzh-qQ?list=RDDeKLpgzh-qQ",
+        "tiempo_sesion": 5.57,
+        "timestamp": "2026-01-04T18:33:50.080623-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/OsAcFu1cLiY?list=RDdeifpvJG5N4",
+        "tiempo_sesion": 6.06,
+        "timestamp": "2026-01-04T18:34:19.461721-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=deifpvJG5N4&list=RDdeifpvJG5N4&start_radio=1",
+        "tiempo_sesion": 6.25,
+        "timestamp": "2026-01-04T18:34:31.112610-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 6.54,
+        "timestamp": "2026-01-04T18:34:48.176432-05:00"
+    }
+]

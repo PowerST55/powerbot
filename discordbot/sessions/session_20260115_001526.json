@@ -1,0 +1,10 @@
+[
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/lSE1Nv-ivdc?list=RDr40AvHs3uJE",
+        "tiempo_sesion": 0.15,
+        "timestamp": "2026-01-15T00:15:36.026225-05:00"
+    }
+]

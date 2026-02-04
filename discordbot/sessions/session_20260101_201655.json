@@ -1,0 +1,576 @@
+[
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "youtube",
+        "url": "https://youtu.be/_09AcGKuRTA?si=aoXrC4Z0JJZfxAkf",
+        "tiempo_sesion": 9.89,
+        "timestamp": "2026-01-01T20:26:48.996538-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 5
+        },
+        "tiempo_sesion": 9.99,
+        "timestamp": "2026-01-01T20:26:55.272784-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/4tIY99xrulA?list=PLRBp0Fe2GpgnK6tqqlVDbmTqQTF-6rrRj",
+        "tiempo_sesion": 17.61,
+        "timestamp": "2026-01-01T20:34:32.061373-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=QXFonGtXRLY",
+        "tiempo_sesion": 24.25,
+        "timestamp": "2026-01-01T20:41:10.476872-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "youtube",
+        "url": "https://youtu.be/BeZSvjNYc70?list=PLRBp0Fe2GpgnK6tqqlVDbmTqQTF-6rrRj",
+        "tiempo_sesion": 25.7,
+        "timestamp": "2026-01-01T20:42:37.859340-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=ImryqrFEQmQ",
+        "tiempo_sesion": 26.03,
+        "timestamp": "2026-01-01T20:42:57.604228-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 26.11,
+        "timestamp": "2026-01-01T20:43:01.912452-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=tLqIK7ZPxx0&list=RDtLqIK7ZPxx0&start_radio=1",
+        "tiempo_sesion": 26.57,
+        "timestamp": "2026-01-01T20:43:29.906898-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 26.63,
+        "timestamp": "2026-01-01T20:43:33.625715-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 4
+        },
+        "tiempo_sesion": 26.92,
+        "timestamp": "2026-01-01T20:43:50.740971-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 2
+        },
+        "tiempo_sesion": 27.1,
+        "timestamp": "2026-01-01T20:44:01.583070-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=ImryqrFEQmQ",
+        "tiempo_sesion": 29.34,
+        "timestamp": "2026-01-01T20:46:16.010059-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=ImryqrFEQmQ",
+        "tiempo_sesion": 29.43,
+        "timestamp": "2026-01-01T20:46:21.162595-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://youtu.be/_09AcGKuRTA?si=aoXrC4Z0JJZfxAkf",
+        "tiempo_sesion": 30.36,
+        "timestamp": "2026-01-01T20:47:17.277472-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=QXFonGtXRLY",
+        "tiempo_sesion": 33.11,
+        "timestamp": "2026-01-01T20:50:02.295659-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=vtWNpFn1JUQ&list=RDvtWNpFn1JUQ&start_radio=1",
+        "tiempo_sesion": 33.5,
+        "timestamp": "2026-01-01T20:50:25.875974-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=vOYm6QuwIkY&list=RDvOYm6QuwIkY&start_radio=1",
+        "tiempo_sesion": 34.43,
+        "timestamp": "2026-01-01T20:51:21.573054-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=QXFonGtXRLY",
+        "tiempo_sesion": 35.02,
+        "timestamp": "2026-01-01T20:51:57.048424-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=vOYm6QuwIkY&list=RDvOYm6QuwIkY&start_radio=1",
+        "tiempo_sesion": 35.48,
+        "timestamp": "2026-01-01T20:52:24.203034-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=qapK8Gx6ZTo&",
+        "tiempo_sesion": 36.39,
+        "timestamp": "2026-01-01T20:53:19.279170-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=i-4IhItBtTg&list=RDi-4IhItBtTg&start_radio=1",
+        "tiempo_sesion": 38.78,
+        "timestamp": "2026-01-01T20:55:42.138344-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/LPg3Fx5sM_o?si=Den7sqVhgqHo0Ngw",
+        "tiempo_sesion": 42.8,
+        "timestamp": "2026-01-01T20:59:43.589234-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/7PvYu-1iEbY?si=TDjZgDwuSDFlo3Nb",
+        "tiempo_sesion": 46.25,
+        "timestamp": "2026-01-01T21:03:10.321069-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/283jbbe226Y?si=r-ijEY4NrNisUERs",
+        "tiempo_sesion": 52.44,
+        "timestamp": "2026-01-01T21:09:21.836833-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=As6pQlCkbns&",
+        "tiempo_sesion": 53.67,
+        "timestamp": "2026-01-01T21:10:35.988848-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=uKBaVkW7l58&",
+        "tiempo_sesion": 56.38,
+        "timestamp": "2026-01-01T21:13:18.544828-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=QXFonGtXRLY",
+        "tiempo_sesion": 65.3,
+        "timestamp": "2026-01-01T21:22:13.752981-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/igRsWUo2qIM?si=MtSnoZfzV59-SbZP",
+        "tiempo_sesion": 70.13,
+        "timestamp": "2026-01-01T21:27:03.110413-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=QXFonGtXRLY",
+        "tiempo_sesion": 74.58,
+        "timestamp": "2026-01-01T21:31:30.558617-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtube.com/shorts/tY7RUcSxunw?si=pD2_D8dtpok8Gdzs",
+        "tiempo_sesion": 75.44,
+        "timestamp": "2026-01-01T21:32:21.786321-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/dEF8nE9Guk0?si=2Rvomsf6afbDIFEC",
+        "tiempo_sesion": 77.11,
+        "timestamp": "2026-01-01T21:34:02.471586-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=QXFonGtXRLY",
+        "tiempo_sesion": 94.25,
+        "timestamp": "2026-01-01T21:51:10.465165-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=IQ9kDtbwoaw&",
+        "tiempo_sesion": 97.63,
+        "timestamp": "2026-01-01T21:54:33.615111-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/igRsWUo2qIM?si=MtSnoZfzV59-SbZP",
+        "tiempo_sesion": 117.74,
+        "timestamp": "2026-01-01T22:14:40.103059-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/FvpeZQM6ig0?si=Hgc6KqBYjnI2eq7z",
+        "tiempo_sesion": 121.82,
+        "timestamp": "2026-01-01T22:18:44.730922-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/VTMjodPIoqs?si=rQJFjP6T7GSc_8Ff",
+        "tiempo_sesion": 127.66,
+        "timestamp": "2026-01-01T22:24:35.079997-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/1HsO742oevs?si=z--31bZWjUJ9cr-i",
+        "tiempo_sesion": 131.69,
+        "timestamp": "2026-01-01T22:28:37.231343-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/Cv5BOYiBxMQ?si=gNeP0LCV3rlPR3ty",
+        "tiempo_sesion": 133.28,
+        "timestamp": "2026-01-01T22:30:12.319817-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/22k1F0XzKUU?si=Tx_yVNw7wz8AZTyc",
+        "tiempo_sesion": 135.7,
+        "timestamp": "2026-01-01T22:32:37.870516-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/tUiyM-Q5XIY?si=zz5Te5GpphWuqE5K",
+        "tiempo_sesion": 141.0,
+        "timestamp": "2026-01-01T22:37:55.712881-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/tUiyM-Q5XIY?si=zz5Te5GpphWuqE5K",
+        "tiempo_sesion": 141.69,
+        "timestamp": "2026-01-01T22:38:37.002852-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/VTMjodPIoqs?si=jkxnpvL9ckCl6yGo",
+        "tiempo_sesion": 142.54,
+        "timestamp": "2026-01-01T22:39:27.810340-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/fAMissggx4Q?si=X-hxV814pNpxHtlO",
+        "tiempo_sesion": 145.48,
+        "timestamp": "2026-01-01T22:42:24.220609-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/FvpeZQM6ig0?si=Hgc6KqBYjnI2eq7z",
+        "tiempo_sesion": 145.86,
+        "timestamp": "2026-01-01T22:42:47.386126-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/E_XUIHDkIf8?si=0mbWmf9vl4twTFIS",
+        "tiempo_sesion": 148.06,
+        "timestamp": "2026-01-01T22:44:59.146374-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/E_XUIHDkIf8?si=0mbWmf9vl4twTFIS",
+        "tiempo_sesion": 148.62,
+        "timestamp": "2026-01-01T22:45:32.932868-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/igRsWUo2qIM?si=MtSnoZfzV59-SbZP",
+        "tiempo_sesion": 148.92,
+        "timestamp": "2026-01-01T22:45:50.599227-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/keufCPlmPlQ?si=UaXzfMH_apYGszVX",
+        "tiempo_sesion": 152.97,
+        "timestamp": "2026-01-01T22:49:53.635655-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=2UsTvXvdFcs",
+        "tiempo_sesion": 155.01,
+        "timestamp": "2026-01-01T22:51:56.405451-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/n9lBtae1hz0?si=9rxm4LGqQCt4lEuX",
+        "tiempo_sesion": 155.87,
+        "timestamp": "2026-01-01T22:52:47.884737-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=Ik0WYGzIDGE&",
+        "tiempo_sesion": 156.37,
+        "timestamp": "2026-01-01T22:53:17.834783-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=krBIf69eJ0w",
+        "tiempo_sesion": 158.22,
+        "timestamp": "2026-01-01T22:55:08.539767-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 158.26,
+        "timestamp": "2026-01-01T22:55:11.289484-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "youtube",
+        "url": "https://youtu.be/V-2irUUpLZA?si=DnZ8C9YF-9B4mkZc",
+        "tiempo_sesion": 161.64,
+        "timestamp": "2026-01-01T22:58:34.142057-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 3
+        },
+        "tiempo_sesion": 162.52,
+        "timestamp": "2026-01-01T22:59:26.921141-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 2
+        },
+        "tiempo_sesion": 162.71,
+        "timestamp": "2026-01-01T22:59:38.106406-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 1
+        },
+        "tiempo_sesion": 162.88,
+        "timestamp": "2026-01-01T22:59:48.308883-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 5
+        },
+        "tiempo_sesion": 163.53,
+        "timestamp": "2026-01-01T23:00:27.276536-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 1
+        },
+        "tiempo_sesion": 163.6,
+        "timestamp": "2026-01-01T23:00:31.544215-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "youtube",
+        "url": "https://youtu.be/LiFw6Y8C-2I?list=PLQwRmTwWx0uaoRXVcKbUDW0wm8G_WJzDI",
+        "tiempo_sesion": 165.17,
+        "timestamp": "2026-01-01T23:02:06.040480-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 165.22,
+        "timestamp": "2026-01-01T23:02:08.505253-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 5
+        },
+        "tiempo_sesion": 165.96,
+        "timestamp": "2026-01-01T23:02:53.276581-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 3
+        },
+        "tiempo_sesion": 169.91,
+        "timestamp": "2026-01-01T23:06:50.443013-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/nnNlKAwi6HQ?si=yPw5GpNGKnMf1_LQ",
+        "tiempo_sesion": 175.38,
+        "timestamp": "2026-01-01T23:12:18.631010-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/nnNlKAwi6HQ?si=yPw5GpNGKnMf1_LQ",
+        "tiempo_sesion": 175.81,
+        "timestamp": "2026-01-01T23:12:43.912926-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/nnNlKAwi6HQ?si=yPw5GpNGKnMf1_LQ",
+        "tiempo_sesion": 176.34,
+        "timestamp": "2026-01-01T23:13:16.063246-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/nnNlKAwi6HQ?si=yPw5GpNGKnMf1_LQ",
+        "tiempo_sesion": 176.75,
+        "timestamp": "2026-01-01T23:13:40.678522-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/ySG3ySmLtyQ?si=fTemPR2lHRlp2OnO",
+        "tiempo_sesion": 179.02,
+        "timestamp": "2026-01-01T23:15:56.501821-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=1qNg5GIP2rs&",
+        "tiempo_sesion": 204.59,
+        "timestamp": "2026-01-01T23:41:31.196763-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://youtu.be/nnNlKAwi6HQ?si=BMUamzAZ1t0i_ZU9",
+        "tiempo_sesion": 211.82,
+        "timestamp": "2026-01-01T23:48:44.570264-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=nnNlKAwi6HQ",
+        "tiempo_sesion": 223.71,
+        "timestamp": "2026-01-02T00:00:38.035653-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=nnNlKAwi6HQ",
+        "tiempo_sesion": 224.06,
+        "timestamp": "2026-01-02T00:00:59.208563-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=r_E3uyC0XCk&list=RDr_E3uyC0XCk&start_radio=1",
+        "tiempo_sesion": 224.31,
+        "timestamp": "2026-01-02T00:01:14.317725-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 224.49,
+        "timestamp": "2026-01-02T00:01:24.758596-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 225.48,
+        "timestamp": "2026-01-02T00:02:24.297091-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "youtube",
+        "url": "https://www.youtube.com/watch?v=Y1HSuBwWrU8",
+        "tiempo_sesion": 225.63,
+        "timestamp": "2026-01-02T00:02:33.199436-05:00"
+    }
+]

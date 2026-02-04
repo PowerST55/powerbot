@@ -1,0 +1,92 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "pause",
+        "tiempo_sesion": 1.18,
+        "timestamp": "2026-01-12T19:21:17.513326-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 1.39,
+        "timestamp": "2026-01-12T19:21:29.797570-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 1.68,
+        "timestamp": "2026-01-12T19:21:47.535610-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 1.81,
+        "timestamp": "2026-01-12T19:21:55.329889-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.17,
+        "timestamp": "2026-01-12T19:22:17.040855-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 2.76,
+        "timestamp": "2026-01-12T19:22:52.008038-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.98,
+        "timestamp": "2026-01-12T19:23:05.271146-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "activado"
+        },
+        "tiempo_sesion": 3.21,
+        "timestamp": "2026-01-12T19:23:18.989629-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "play",
+        "tiempo_sesion": 3.26,
+        "timestamp": "2026-01-12T19:23:22.328678-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "bucle",
+        "parametros": {
+            "estado": "desactivado"
+        },
+        "tiempo_sesion": 3.42,
+        "timestamp": "2026-01-12T19:23:32.130296-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 3.48,
+        "timestamp": "2026-01-12T19:23:35.269167-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 5.07,
+        "timestamp": "2026-01-12T19:25:10.857930-05:00"
+    }
+]

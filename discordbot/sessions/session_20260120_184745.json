@@ -1,0 +1,41 @@
+[
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=KeX62UqZW-g",
+        "tiempo_sesion": 9.69,
+        "timestamp": "2026-01-20T18:57:26.511937-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=wgvqiH7iCRo&",
+        "tiempo_sesion": 9.79,
+        "timestamp": "2026-01-20T18:57:32.909158-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=KeX62UqZW-g",
+        "tiempo_sesion": 9.99,
+        "timestamp": "2026-01-20T18:57:44.536356-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=wgvqiH7iCRo&",
+        "tiempo_sesion": 10.07,
+        "timestamp": "2026-01-20T18:57:49.625204-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 10.1,
+        "timestamp": "2026-01-20T18:57:51.169392-05:00"
+    }
+]

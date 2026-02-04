@@ -1,0 +1,10 @@
+[
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=8rjxkHevoWY&",
+        "tiempo_sesion": 13.49,
+        "timestamp": "2026-01-25T23:52:25.905630-05:00"
+    }
+]

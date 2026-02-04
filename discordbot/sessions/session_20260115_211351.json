@@ -1,0 +1,81 @@
+[
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/QkilxmkWjTM?si=_a1u2R4NGnzenTK8",
+        "tiempo_sesion": 7.49,
+        "timestamp": "2026-01-15T21:21:21.169922-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 12.72,
+        "timestamp": "2026-01-15T21:26:34.856237-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 16.65,
+        "timestamp": "2026-01-15T21:30:30.530940-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/buuntuS3RO4?si=iSjjUUiVXLctJm5w",
+        "tiempo_sesion": 18.83,
+        "timestamp": "2026-01-15T21:32:41.049223-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://youtu.be/LPg3Fx5sM_o?si=eBpT_kVUCAKjmpQh",
+        "tiempo_sesion": 21.7,
+        "timestamp": "2026-01-15T21:35:33.379303-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 28.05,
+        "timestamp": "2026-01-15T21:41:54.555022-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 39.29,
+        "timestamp": "2026-01-15T21:53:08.881462-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 47.83,
+        "timestamp": "2026-01-15T22:01:41.043077-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 5
+        },
+        "tiempo_sesion": 47.94,
+        "timestamp": "2026-01-15T22:01:47.801345-05:00"
+    },
+    {
+        "usuario": "taffyta._",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 3
+        },
+        "tiempo_sesion": 48.65,
+        "timestamp": "2026-01-15T22:02:30.321576-05:00"
+    }
+]

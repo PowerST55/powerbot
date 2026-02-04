@@ -1,0 +1,43 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 0.44,
+        "timestamp": "2026-01-05T12:59:26.980676-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 2.54,
+        "timestamp": "2026-01-05T13:01:33.434200-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 5
+        },
+        "tiempo_sesion": 3.49,
+        "timestamp": "2026-01-05T13:02:30.513077-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 3.57,
+        "timestamp": "2026-01-05T13:02:35.171231-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 20.22,
+        "timestamp": "2026-01-05T13:19:14.366817-05:00"
+    }
+]

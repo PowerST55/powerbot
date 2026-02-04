@@ -1,0 +1,24 @@
+[
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://youtu.be/qeDIZCc6Cyo",
+        "tiempo_sesion": 0.18,
+        "timestamp": "2026-01-05T12:52:19.359611-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 1.66,
+        "timestamp": "2026-01-05T12:53:48.282790-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 1.73,
+        "timestamp": "2026-01-05T12:53:52.473151-05:00"
+    }
+]

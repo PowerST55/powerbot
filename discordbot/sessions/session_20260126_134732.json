@@ -1,0 +1,58 @@
+[
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "volumen",
+        "parametros": {
+            "nivel": 10
+        },
+        "tiempo_sesion": 2.88,
+        "timestamp": "2026-01-26T13:50:25.349202-05:00"
+    },
+    {
+        "usuario": "elpibecarlos",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=PFa9c9K8oAI",
+        "tiempo_sesion": 3.14,
+        "timestamp": "2026-01-26T13:50:40.979408-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=PFa9c9K8oAI",
+        "tiempo_sesion": 4.24,
+        "timestamp": "2026-01-26T13:51:47.038909-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=BfqGLAqugxM&",
+        "tiempo_sesion": 5.34,
+        "timestamp": "2026-01-26T13:52:53.230873-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=uKv1lzsYe0o&",
+        "tiempo_sesion": 7.51,
+        "timestamp": "2026-01-26T13:55:03.217791-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "next",
+        "tiempo_sesion": 8.41,
+        "timestamp": "2026-01-26T13:55:57.394418-05:00"
+    },
+    {
+        "usuario": "ionmaxiaz",
+        "tipo": "comando",
+        "comando": "borrar_cola",
+        "tiempo_sesion": 8.71,
+        "timestamp": "2026-01-26T13:56:14.887411-05:00"
+    }
+]

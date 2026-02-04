@@ -1,0 +1,25 @@
+[
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "force-youtube",
+        "url": "https://www.youtube.com/watch?v=ieXd1sbDRBY&",
+        "tiempo_sesion": 1.41,
+        "timestamp": "2026-01-25T23:07:59.648992-05:00"
+    },
+    {
+        "usuario": "Sistema",
+        "tipo": "evento",
+        "evento": "video_ended_next",
+        "url": "https://www.youtube.com/watch?v=6nQPFOIsjLk&",
+        "tiempo_sesion": 1.59,
+        "timestamp": "2026-01-25T23:08:10.275363-05:00"
+    },
+    {
+        "usuario": "soydarko",
+        "tipo": "comando",
+        "comando": "stop",
+        "tiempo_sesion": 1.6,
+        "timestamp": "2026-01-25T23:08:11.162699-05:00"
+    }
+]

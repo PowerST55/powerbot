@@ -84,6 +84,10 @@ class DiscordBot(commands.Bot):
         try:
             voice_users = self.economy_manager.get_all_voice_users()
             points_amount = self.economy_manager.get_points_per_interval()
+            interval = self.economy_manager.get_points_interval()
+            
+            if len(voice_users) > 0:
+                print(f"🔍 Verificando {len(voice_users)} usuarios en voz (intervalo: {interval}s, puntos: {points_amount}₱)")
             
             for user_id in voice_users:
                 # Verificar si el usuario debe ganar puntos según el intervalo configurado
@@ -129,6 +133,22 @@ class DiscordBot(commands.Bot):
                     except Exception as e:
                         print(f"⚠ Error cacacheando miembro {member.name}: {e}")
             print("✓ Miembros cacacheados correctamente\n")
+        except Exception as e:
+            print(f"⚠ Error al cachear miembros: {e}\n")
+        
+        # Sincronizar usuarios ya en canales de voz
+        try:
+            print("🔊 Sincronizando usuarios en canales de voz...")
+            for guild in self.guilds:
+                for channel in guild.voice_channels:
+                    for member in channel.members:
+                        if not member.bot:
+                            self.economy_manager.add_voice_user(member.id)
+                            print(f"  🔄 {member.name} ya estaba en {channel.name}")
+            voice_count = len(self.economy_manager.get_all_voice_users())
+            print(f"✓ {voice_count} usuarios en voz detectados\n")
+        except Exception as e:
+            print(f"⚠ Error sincronizando usuarios en voz: {e}\n")
         except Exception as e:
             print(f"⚠ Error al cachear miembros: {e}\n")
         

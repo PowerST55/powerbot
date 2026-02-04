@@ -114,16 +114,16 @@ class SyncManager:
 
             if db_tx > local_tx:
                 merged['puntos'] = db_points
-                merged['last_tx_at'] = user_db.get('last_tx_at')
+                merged['last_tx_at'] = self._normalize_timestamp_str(user_db.get('last_tx_at'))
                 logger.info("     → Usando puntos de BD (transacción más reciente)")
             elif local_tx > db_tx:
                 merged['puntos'] = local_points
-                merged['last_tx_at'] = user_local.get('last_tx_at')
+                merged['last_tx_at'] = self._normalize_timestamp_str(user_local.get('last_tx_at'))
                 logger.info("     → Usando puntos locales (transacción más reciente)")
             else:
                 # Sin timestamp confiable, conservar local para evitar revertir gastos recientes
                 merged['puntos'] = local_points
-                merged['last_tx_at'] = user_local.get('last_tx_at')
+                merged['last_tx_at'] = self._normalize_timestamp_str(user_local.get('last_tx_at'))
                 logger.info("     → Sin timestamp confiable, conservando local")
         
         # Fusionar plataformas
@@ -153,6 +153,22 @@ class SyncManager:
                 except ValueError:
                     return datetime.min
         return datetime.min
+
+    @staticmethod
+    def _normalize_timestamp_str(value) -> Optional[str]:
+        """Convierte timestamp a string ISO para guardar en JSON."""
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.isoformat()
+        if isinstance(value, (int, float)):
+            try:
+                return datetime.fromtimestamp(value).isoformat()
+            except (OSError, ValueError):
+                return None
+        if isinstance(value, str):
+            return value
+        return None
     
     def _save_both_systems(self, user_dict: Dict) -> bool:
         """Guarda un usuario en ambos sistemas (JSON + BD)
@@ -164,6 +180,10 @@ class SyncManager:
         user_cache = self.load_cache()
         users = user_cache.get('users', [])
         
+        # Normalizar timestamps para JSON
+        if 'last_tx_at' in user_dict:
+            user_dict['last_tx_at'] = self._normalize_timestamp_str(user_dict.get('last_tx_at'))
+
         # Buscar y actualizar o agregar
         found = False
         for u in users:

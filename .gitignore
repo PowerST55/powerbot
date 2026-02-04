@@ -11,5 +11,13 @@ dist/
 build/
 .DS_Store
 data/backups/
+data/transactions_log.json
+data/user_cache.json
+data/active_users.json
+data/custom_users.json
+data/pending_links.json
+data/slot_luck.json
+discordbot/sessions/
+discordbot/data/
 *.log
 *.pid

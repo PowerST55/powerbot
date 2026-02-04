@@ -228,6 +228,9 @@ def load_user_cache():
                 # ✅ PROTECCIÓN: Limpieza deshabilitada para evitar pérdida de datos
                 # Solo ejecutar manualmente cuando sea necesario con clean_orphaned_users()
                 # data = clean_orphaned_users(data)
+
+                # Reparar duplicados y normalizar
+                data = _repair_user_cache(data)
                 
                 # Asegurar que existen todos los campos necesarios
                 if "discord_to_id" not in data:
@@ -257,7 +260,7 @@ def load_user_cache():
                     users.append(user)
                     yt_to_id[yt_id] = next_id
                     next_id += 1
-                return {"users": users, "yt_to_id": yt_to_id, "next_id": next_id}
+                return _repair_user_cache({"users": users, "yt_to_id": yt_to_id, "next_id": next_id})
             return {"users": [], "yt_to_id": {}, "next_id": 1}
     except FileNotFoundError as e:
         print(f"⚠️ ERROR: Archivo no encontrado {CACHE_FILE}: {e}")
@@ -277,6 +280,74 @@ def load_user_cache():
     except Exception as e:
         print(f"🔴 ERROR INESPERADO al cargar cache: {type(e).__name__}: {e}")
         return {"users": [], "yt_to_id": {}, "discord_to_id": {}, "next_id": 1}
+
+
+def _repair_user_cache(user_cache: dict) -> dict:
+    """Repara duplicados y normaliza campos de usuarios en caché."""
+    users = user_cache.get("users", []) or []
+    if not isinstance(users, list):
+        user_cache["users"] = []
+        return user_cache
+
+    def _ts(u):
+        value = u.get("last_tx_at") or u.get("updated_at") or u.get("created_at")
+        return SyncManager._normalize_timestamp(value) if SyncManager else datetime.min
+
+    deduped = {}
+    order_keys = []
+
+    for u in users:
+        if not isinstance(u, dict):
+            continue
+        key = None
+        if u.get("discord_id"):
+            key = f"discord:{u.get('discord_id')}"
+        elif u.get("youtube_id"):
+            key = f"youtube:{u.get('youtube_id')}"
+        elif u.get("id") is not None:
+            key = f"id:{u.get('id')}"
+
+        if key is None:
+            continue
+
+        if key not in deduped:
+            deduped[key] = u
+            order_keys.append(key)
+        else:
+            if _ts(u) >= _ts(deduped[key]):
+                deduped[key] = u
+
+    cleaned_users = []
+    for key in order_keys:
+        u = deduped[key]
+        if "is_moderator" in u and "isModerator" not in u:
+            u["isModerator"] = bool(u.get("is_moderator"))
+        if "is_member" in u and "isMember" not in u:
+            u["isMember"] = bool(u.get("is_member"))
+        u.pop("is_moderator", None)
+        u.pop("is_member", None)
+        cleaned_users.append(u)
+
+    user_cache["users"] = cleaned_users
+
+    discord_to_id = {}
+    yt_to_id = {}
+    max_id = 0
+    for u in cleaned_users:
+        uid = u.get("id")
+        if isinstance(uid, int) and uid > max_id:
+            max_id = uid
+        if u.get("discord_id"):
+            discord_to_id[str(u.get("discord_id"))] = uid
+        if u.get("youtube_id"):
+            yt_to_id[str(u.get("youtube_id"))] = uid
+
+    user_cache["discord_to_id"] = discord_to_id
+    user_cache["yt_to_id"] = yt_to_id
+    user_cache["next_id"] = max(max_id + 1, user_cache.get("next_id", 1))
+
+    return user_cache
+
 
 def save_user_cache(user_cache):
     """Guarda la caché de usuarios en el archivo JSON (nuevo formato) con respaldo automático."""

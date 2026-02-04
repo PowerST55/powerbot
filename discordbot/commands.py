@@ -733,6 +733,62 @@ def setup_commands(bot):
                 ephemeral=True
             )
 
+    @bot.tree.command(name="config_points_interval", description="Configura el intervalo de tiempo para ganar puntos (solo moderación)")
+    @app_commands.describe(segundos="Intervalo en segundos")
+    @app_commands.checks.has_role(1181253292274221267)
+    async def config_points_interval(interaction: discord.Interaction, segundos: int):
+        """Configura cada cuánto tiempo se ganan puntos (canales de texto y voz)."""
+        try:
+            # Configurar intervalo
+            if bot.economy_manager.set_points_interval(segundos):
+                minutos = segundos / 60
+                
+                embed = discord.Embed(
+                    title="⏰ Intervalo de puntos configurado",
+                    description=f"El intervalo de tiempo ha sido actualizado correctamente",
+                    color=0x00ff00
+                )
+                embed.add_field(
+                    name="⏱️ Nuevo intervalo",
+                    value=f"**{segundos}** segundos ({minutos:.1f} minutos)",
+                    inline=False
+                )
+                embed.add_field(
+                    name="💰 Ganancia actual",
+                    value=f"**{bot.economy_manager.get_points_per_interval()}₱** cada {minutos:.1f} minutos",
+                    inline=False
+                )
+                embed.add_field(
+                    name="📍 Aplicable en",
+                    value="• Canales de texto configurados\n• Todos los canales de voz",
+                    inline=False
+                )
+                embed.add_field(
+                    name="📊 Resumen",
+                    value=f"• Canales texto: {len(bot.economy_manager.points_channels)}\n• Usuarios en voz: {len(bot.economy_manager.voice_users)}\n• Estado: {'✅ Habilitado' if bot.economy_manager.points_enabled else '❌ Deshabilitado'}",
+                    inline=False
+                )
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Enviar log
+                await bot.send_log(
+                    f"Intervalo de puntos actualizado por {interaction.user.mention}\n"
+                    f"Nuevo intervalo: **{segundos}s** ({minutos:.1f} min)",
+                    "INFO"
+                )
+            else:
+                await interaction.response.send_message(
+                    "❌ Error al configurar intervalo.",
+                    ephemeral=True
+                )
+        except Exception as e:
+            print(f"Error en config_points_interval: {e}")
+            await interaction.response.send_message(
+                f"❌ Error: {str(e)}",
+                ephemeral=True
+            )
+
     @bot.tree.command(name="dar", description="Transfiere pews a otro usuario (Discord/YouTube)")
     @app_commands.describe(usuario="Usuario de Discord (opcional)", busqueda="ID o nombre (opcional)", cantidad="Cantidad o 'all'")
     async def dar(interaction: discord.Interaction, usuario: discord.User | None = None, busqueda: str | None = None, cantidad: str = "0"):

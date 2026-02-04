@@ -267,6 +267,28 @@ class EconomyManager:
         """
         return self.points_per_interval
     
+    def set_points_interval(self, seconds: int) -> bool:
+        """Establece el intervalo de tiempo (en segundos) para ganar puntos
+        
+        Args:
+            seconds: Intervalo en segundos
+            
+        Returns:
+            True si se configuró correctamente
+        """
+        self.points_interval = seconds
+        self.save_config()
+        print(f"✓ Intervalo de puntos establecido a: {seconds} segundos ({seconds/60:.1f} minutos)")
+        return True
+    
+    def get_points_interval(self) -> int:
+        """Obtiene el intervalo de tiempo en segundos
+        
+        Returns:
+            Intervalo en segundos
+        """
+        return self.points_interval
+    
     def get_config_summary(self) -> dict:
         """Obtiene un resumen de la configuración actual
         

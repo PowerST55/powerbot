@@ -61,11 +61,36 @@ def init_database():
         logger.info("🔄 Inicializando sincronización con BD CENTRAL (PC)...")
         db_manager = DatabaseManager()
         sync_manager = SyncManager(db_manager, save_user_cache, load_user_cache)
+        _sync_next_id_with_db()
         logger.info("✓ Sincronización con BD central iniciada (Discord Bot ↔ PC)")
         return True
     except Exception as e:
         logger.warning(f"⚠ No se pudo inicializar BD: {e}")
         logger.warning("  El sistema funcionará solo con caché JSON")
+        return False
+
+
+def _sync_next_id_with_db():
+    """Sincroniza next_id local con el MAX(id) de la BD para evitar colisiones."""
+    if not db_manager or not db_manager.is_connected:
+        return False
+
+    try:
+        max_id = db_manager.get_max_user_id()
+        if max_id is None:
+            return False
+
+        user_cache = load_user_cache()
+        next_id = user_cache.get("next_id", 1)
+        desired_next = max(max_id + 1, next_id)
+
+        if desired_next != next_id:
+            user_cache["next_id"] = desired_next
+            save_user_cache(user_cache)
+            logger.info(f"✓ next_id sincronizado con BD: {next_id} → {desired_next}")
+        return True
+    except Exception as e:
+        logger.warning(f"⚠ Error sincronizando next_id con BD: {e}")
         return False
 
 # -------------------- Gestión de usuarios --------------------
@@ -312,10 +337,38 @@ def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=
             user = u
             break
 
+    # Si no está en caché, intentar obtenerlo desde BD para evitar duplicados
+    if not user and db_manager and db_manager.is_connected:
+        db_user = db_manager.get_user_by_youtube_id(str(youtube_id))
+        if db_user:
+            _upsert_user_from_db(db_user)
+            # Recargar caché y localizar
+            user_cache = load_user_cache()
+            users = user_cache.get("users", [])
+            for u in users:
+                if u.get("youtube_id") == youtube_id:
+                    user = u
+                    break
+
     # Si no existe, crear uno nuevo
     if not user:
+        # Reservar ID en BD si está disponible para evitar conflictos
+        reserved_id = None
+        if db_manager and db_manager.is_connected:
+            reserved_id = db_manager.upsert_user_minimal(
+                youtube_id=str(youtube_id),
+                name=name,
+                avatar_url=avatar_url,
+                is_moderator=bool(is_moderator),
+                is_member=bool(is_member),
+                platform_sources=["youtube"],
+            )
+
+        if reserved_id is not None:
+            next_id = max(next_id, reserved_id)
+
         user = {
-            "id": next_id,
+            "id": reserved_id if reserved_id is not None else next_id,
             "youtube_id": youtube_id,
             "discord_id": None,  # Para vincular en el futuro
             "name": name,
@@ -329,8 +382,8 @@ def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=
             "platform_sources": ["youtube"]  # Plataformas desde donde viene
         }
         users.append(user)
-        yt_to_id[youtube_id] = next_id
-        user_cache["next_id"] = next_id + 1
+        yt_to_id[youtube_id] = user["id"]
+        user_cache["next_id"] = max(user_cache.get("next_id", 1), (user["id"] or 0) + 1)
     else:
         # Actualizar datos
         user["name"] = name
@@ -387,11 +440,39 @@ def cache_discord_user(discord_id, name, avatar_url=None):
         if u.get("discord_id") == discord_id_str:
             user = u
             break
+
+    # Si no está en caché, intentar obtenerlo desde BD para evitar duplicados
+    if not user and db_manager and db_manager.is_connected:
+        db_user = db_manager.get_user_by_discord_id(discord_id_str)
+        if db_user:
+            _upsert_user_from_db(db_user)
+            # Recargar caché y localizar
+            user_cache = load_user_cache()
+            users = user_cache.get("users", [])
+            for u in users:
+                if u.get("discord_id") == discord_id_str:
+                    user = u
+                    break
     
     # Si no existe, crear uno nuevo
     if not user:
+        # Reservar ID en BD si está disponible para evitar conflictos
+        reserved_id = None
+        if db_manager and db_manager.is_connected:
+            reserved_id = db_manager.upsert_user_minimal(
+                discord_id=discord_id_str,
+                name=name,
+                avatar_discord_url=avatar_url,
+                is_moderator=False,
+                is_member=False,
+                platform_sources=["discord"],
+            )
+
+        if reserved_id is not None:
+            next_id = max(next_id, reserved_id)
+
         user = {
-            "id": next_id,
+            "id": reserved_id if reserved_id is not None else next_id,
             "youtube_id": None,  # Para vincular en el futuro
             "discord_id": discord_id_str,
             "name": name,
@@ -405,8 +486,8 @@ def cache_discord_user(discord_id, name, avatar_url=None):
             "platform_sources": ["discord"]
         }
         users.append(user)
-        discord_to_id[discord_id_str] = next_id
-        user_cache["next_id"] = next_id + 1
+        discord_to_id[discord_id_str] = user["id"]
+        user_cache["next_id"] = max(user_cache.get("next_id", 1), (user["id"] or 0) + 1)
         logger.info(f"✓ Nuevo usuario Discord cacacheado: {name} (ID: {discord_id})")
     else:
         # Actualizar datos

@@ -395,6 +395,84 @@ class DatabaseManager:
             logger.warning(f"⚠ Error consultando usuario por nombre parcial: {e}")
             return None
 
+    def upsert_user_minimal(self,
+                            youtube_id: Optional[str] = None,
+                            discord_id: Optional[str] = None,
+                            name: Optional[str] = None,
+                            avatar_url: Optional[str] = None,
+                            avatar_discord_url: Optional[str] = None,
+                            is_moderator: bool = False,
+                            is_member: bool = False,
+                            platform_sources: Optional[List[str]] = None) -> Optional[int]:
+        """Crea o reutiliza un usuario y retorna su ID universal.
+
+        Usa ON DUPLICATE KEY para evitar IDs duplicados y recuperar el ID existente.
+        """
+        if not self.ensure_connection():
+            return None
+
+        if not youtube_id and not discord_id:
+            return None
+
+        try:
+            cursor = self.connection.cursor()
+            platform_sources = platform_sources or ["unknown"]
+            platform_sources_json = json.dumps(platform_sources)
+
+            cursor.execute(
+                """
+                INSERT INTO users
+                (youtube_id, discord_id, name, avatar_url, avatar_discord_url,
+                 puntos, last_tx_at, is_moderator, is_member, platform_sources, synced_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                ON DUPLICATE KEY UPDATE
+                    id = LAST_INSERT_ID(id),
+                    name = VALUES(name),
+                    avatar_url = VALUES(avatar_url),
+                    avatar_discord_url = VALUES(avatar_discord_url),
+                    is_moderator = VALUES(is_moderator),
+                    is_member = VALUES(is_member),
+                    platform_sources = VALUES(platform_sources),
+                    synced_at = NOW()
+                """,
+                (
+                    youtube_id,
+                    discord_id,
+                    name or "Unknown",
+                    avatar_url,
+                    avatar_discord_url,
+                    0,
+                    None,
+                    bool(is_moderator),
+                    bool(is_member),
+                    platform_sources_json,
+                ),
+            )
+            self.connection.commit()
+            user_id = cursor.lastrowid
+            cursor.close()
+            return int(user_id) if user_id else None
+        except Error as e:
+            logger.warning(f"⚠ Error creando/reutilizando usuario: {e}")
+            return None
+
+    def get_max_user_id(self) -> Optional[int]:
+        """Obtiene el máximo ID de usuarios en BD"""
+        if not self.ensure_connection():
+            return None
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT MAX(id) FROM users")
+            row = cursor.fetchone()
+            cursor.close()
+            if row and row[0] is not None:
+                return int(row[0])
+            return 0
+        except Error as e:
+            logger.warning(f"⚠ Error obteniendo MAX(id): {e}")
+            return None
+
     def get_top_users(self, limit: int = 10) -> List[Dict]:
         """Obtiene top de usuarios por puntos desde BD"""
         if not self.ensure_connection():

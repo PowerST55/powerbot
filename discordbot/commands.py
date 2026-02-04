@@ -110,6 +110,9 @@ def setup_commands(bot):
     """
     Configura todos los comandos del bot.
     """
+
+    config_cache_group = app_commands.Group(name="config_cache", description="Herramientas para gestionar la caché de usuarios")
+    bot.tree.add_command(config_cache_group)
     
     @bot.tree.command(name="force_youtube", description="Reproduce un video inmediatamente ignorando la cola")
     @app_commands.describe(link="El link de YouTube a forzar")
@@ -506,6 +509,27 @@ def setup_commands(bot):
             await interaction.response.send_message(f"Volumen ajustado a {nivel}/10.")
         else:
             await interaction.response.send_message("Error: El nivel de volumen debe estar entre 1 y 10.")
+
+    @config_cache_group.command(name="add", description="Añade un usuario al cache aunque no haya interactuado")
+    @app_commands.describe(user="Usuario a cachear")
+    @app_commands.checks.has_role(1181253292274221267)
+    async def config_cache_add(interaction: discord.Interaction, user: discord.User):
+        from backend.usermanager import cache_discord_user
+
+        avatar_url = user.avatar.url if user.avatar else None
+        user_id = cache_discord_user(
+            discord_id=user.id,
+            name=user.name,
+            avatar_url=avatar_url
+        )
+
+        embed = discord.Embed(
+            title="✓ Usuario cacheado",
+            description=f"Se agregó **{user.mention}** a la caché de usuarios.",
+            color=0x00FF00
+        )
+        embed.add_field(name="🆔 ID Universal", value=f"{user_id}", inline=True)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # ==================== COMANDOS DE PEWS ====================
     
@@ -1063,25 +1087,15 @@ def setup_commands(bot):
     @bot.tree.command(name="top", description="Muestra el ranking de los 10 usuarios más ricos en pews")
     async def top_ranking(interaction: discord.Interaction):
         """Muestra un top 10 de usuarios por cantidad de pews."""
-        from backend.usermanager import load_user_cache
+        from backend.usermanager import get_top_users, get_user_rank, get_user_points
         
-        user_cache = load_user_cache()
-        users = user_cache.get("users", [])
+        # Obtener top desde BD si está disponible (con fallback a caché)
+        top_10 = get_top_users(limit=10)
         
-        # Ordenar usuarios por puntos de mayor a menor
-        users_sorted = sorted(users, key=lambda x: x.get("puntos", 0), reverse=True)
-        
-        # Tomar top 10
-        top_10 = users_sorted[:10]
-        
-        # Encontrar posición del usuario actual
-        user_position = None
-        user_points = 0
-        for idx, user in enumerate(users_sorted, 1):
-            if user.get("discord_id") == str(interaction.user.id):
-                user_position = idx
-                user_points = user.get("puntos", 0)
-                break
+        # Obtener posición real del usuario actual (BD) si está disponible
+        user_position = get_user_rank(interaction.user.id)
+        user_points_info = get_user_points(interaction.user.id)
+        user_points = user_points_info.get("puntos", 0) if user_points_info else 0
         
         # Crear embed principal con color dorado
         embed = discord.Embed(

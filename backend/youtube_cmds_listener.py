@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 from googleapiclient.errors import HttpError
-from usermanager import load_banned_users , load_user_cache, load_custom_users, add_points_to_user, get_user_points, link_accounts, unlink_account, db_manager
+from usermanager import load_banned_users , load_user_cache, load_custom_users, add_points_to_user, get_user_points, find_user_by_query, link_accounts, unlink_account, db_manager
 from activities.poll import iniciar_encuesta, resetpoll
 from activities.text2voice import TextToVoice
 from backend.transaction_logger import TransactionLogger
@@ -321,28 +321,12 @@ async def youtube_listener(
                                 # Remover @ si está presente
                                 if usuario_buscar.startswith("@"):
                                     usuario_buscar = usuario_buscar[1:]
-                                
-                                usuario_encontrado = None
-                                # Si es ID numérico
-                                if usuario_buscar.isdigit():
-                                    for u in user_cache.get("users", []):
-                                        if str(u.get("id")) == usuario_buscar:
-                                            usuario_encontrado = u
-                                            break
-                                else:
-                                    # Buscar por nombre (case-insensitive, exacto o parcial)
-                                    buscar_lower = usuario_buscar.lower()
-                                    for u in user_cache.get("users", []):
-                                        name_val = (u.get("name", "") or "").strip()
-                                        name_lower = name_val.lower()
-                                        if name_lower == buscar_lower or buscar_lower in name_lower:
-                                            usuario_encontrado = u
-                                            break
+
+                                usuario_encontrado = find_user_by_query(usuario_buscar, allow_partial=True)
 
                                 if usuario_encontrado:
-                                    # Obtener puntos por ID universal
-                                    uid = usuario_encontrado.get("id")
-                                    info = get_user_points(uid)
+                                    uid = usuario_encontrado.get("id") or usuario_encontrado.get("discord_id") or usuario_encontrado.get("youtube_id")
+                                    info = get_user_points(uid) if uid else usuario_encontrado
                                     pews = info.get("puntos", 0) if info else 0
                                     nombre = usuario_encontrado.get("name", usuario_buscar)
                                     await send_message_async(youtube, f"{nombre} tiene {pews:.1f}₱")

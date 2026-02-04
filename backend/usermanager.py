@@ -600,25 +600,222 @@ def get_user_points(user_id):
     """
     user_cache = load_user_cache()
     users = user_cache.get("users", [])
-    
+
     user_id_str = str(user_id)
-    
-    # Buscar por discord_id
+
+    # Buscar primero en caché local
+    local_user = None
     for user in users:
         if user.get("discord_id") == user_id_str:
-            return user
-    
-    # Buscar por youtube_id
-    for user in users:
-        if user.get("youtube_id") == user_id_str:
-            return user
-    
-    # Buscar por ID universal
-    for user in users:
-        if str(user.get("id")) == user_id_str:
-            return user
-    
+            local_user = user
+            break
+    if not local_user:
+        for user in users:
+            if user.get("youtube_id") == user_id_str:
+                local_user = user
+                break
+    if not local_user:
+        for user in users:
+            if str(user.get("id")) == user_id_str:
+                local_user = user
+                break
+
+    # 1) Si hay sincronizador y BD, resolver con la fuente más reciente
+    if sync_manager and db_manager and db_manager.is_connected:
+        if local_user:
+            merged = sync_manager.sync_user_bidirectional(local_user, source='local')
+            if merged and merged.get("id") is not None:
+                cached = get_user_by_id(merged.get("id"))
+                if cached:
+                    return cached
+            return merged
+
+        db_user = None
+        db_user = db_manager.get_user_by_discord_id(user_id_str)
+        if not db_user:
+            db_user = db_manager.get_user_by_youtube_id(user_id_str)
+        if not db_user and user_id_str.isdigit():
+            db_user = db_manager.get_user_by_id(int(user_id_str))
+
+        if db_user:
+            _upsert_user_from_db(db_user)
+            if db_user.get("id") is not None:
+                cached = get_user_by_id(db_user.get("id"))
+                if cached:
+                    return cached
+            return db_user
+
+    # 2) Si BD conectada sin sync_manager, preferir BD
+    if db_manager and db_manager.is_connected:
+        db_user = None
+        db_user = db_manager.get_user_by_discord_id(user_id_str)
+        if not db_user:
+            db_user = db_manager.get_user_by_youtube_id(user_id_str)
+        if not db_user and user_id_str.isdigit():
+            db_user = db_manager.get_user_by_id(int(user_id_str))
+
+        if db_user:
+            _upsert_user_from_db(db_user)
+            if db_user.get("id") is not None:
+                cached = get_user_by_id(db_user.get("id"))
+                if cached:
+                    return cached
+            return db_user
+
+    # 3) Fallback a caché local
+    return local_user
+
+
+def get_top_users(limit: int = 10):
+    """Obtiene el top de usuarios por puntos, priorizando BD si está disponible."""
+    # BD primero
+    if db_manager and db_manager.is_connected:
+        results = db_manager.get_top_users(limit=limit)
+        if results:
+            cached_results = []
+            for user in results:
+                _upsert_user_from_db(user)
+                if user.get("id") is not None:
+                    cached = get_user_by_id(user.get("id"))
+                    if cached:
+                        cached_results.append(cached)
+                        continue
+                cached_results.append(user)
+            return cached_results
+
+    # Fallback a caché
+    user_cache = load_user_cache()
+    users = user_cache.get("users", [])
+    return sorted(users, key=lambda x: x.get("puntos", 0), reverse=True)[:limit]
+
+
+def get_user_rank(user_id):
+    """Obtiene la posición global del usuario, usando BD si está disponible."""
+    if db_manager and db_manager.is_connected:
+        user = get_user_points(user_id)
+        if user and user.get("id") is not None:
+            return db_manager.get_user_rank(int(user.get("id")))
+    # Fallback local
+    user_cache = load_user_cache()
+    users = user_cache.get("users", [])
+    users_sorted = sorted(users, key=lambda x: x.get("puntos", 0), reverse=True)
+    user_id_str = str(user_id)
+    for idx, user in enumerate(users_sorted, 1):
+        if user.get("discord_id") == user_id_str or user.get("youtube_id") == user_id_str or str(user.get("id")) == user_id_str:
+            return idx
     return None
+
+
+def find_user_by_query(query: str, allow_partial: bool = True):
+    """Busca usuario por ID o nombre, priorizando BD si está disponible."""
+    if not query:
+        return None
+
+    query_str = str(query).strip()
+    if not query_str:
+        return None
+
+    # Si es ID numérico, delegar a get_user_points (usa BD/sync)
+    if query_str.isdigit():
+        return get_user_points(query_str)
+
+    # BD primero para nombres
+    if db_manager and db_manager.is_connected:
+        db_user = db_manager.get_user_by_name_exact(query_str)
+        if not db_user and allow_partial:
+            db_user = db_manager.get_user_by_name_partial(query_str)
+        if db_user:
+            _upsert_user_from_db(db_user)
+            if db_user.get("id") is not None:
+                cached = get_user_by_id(db_user.get("id"))
+                if cached:
+                    return cached
+            return db_user
+
+    # Fallback a caché
+    user_cache = load_user_cache()
+    users = user_cache.get("users", [])
+    buscar_lower = query_str.lower()
+
+    for u in users:
+        if (u.get("name", "") or "").strip().lower() == buscar_lower:
+            return u
+
+    if allow_partial:
+        for u in users:
+            name_val = (u.get("name", "") or "").strip().lower()
+            if buscar_lower in name_val:
+                return u
+
+    return None
+
+
+def _upsert_user_from_db(db_user: dict):
+    """Inserta o actualiza un usuario de BD en la caché local para evitar desfases."""
+    if not isinstance(db_user, dict):
+        return
+
+    user_cache = load_user_cache()
+    users = user_cache.get("users", [])
+
+    db_id = db_user.get("id")
+    discord_id = db_user.get("discord_id")
+    youtube_id = db_user.get("youtube_id")
+
+    target = None
+    if db_id is not None:
+        for u in users:
+            if u.get("id") == db_id:
+                target = u
+                break
+    if not target and discord_id:
+        for u in users:
+            if u.get("discord_id") == str(discord_id):
+                target = u
+                break
+    if not target and youtube_id:
+        for u in users:
+            if u.get("youtube_id") == str(youtube_id):
+                target = u
+                break
+
+    if not target:
+        target = {}
+        users.append(target)
+
+    # Actualizar campos relevantes
+    target["id"] = db_id
+    target["youtube_id"] = youtube_id
+    target["discord_id"] = str(discord_id) if discord_id is not None else None
+    target["name"] = db_user.get("name")
+    target["avatar_url"] = db_user.get("avatar_url")
+    target["avatar_discord_url"] = db_user.get("avatar_discord_url")
+    target["puntos"] = float(db_user.get("puntos", 0))
+    target["last_tx_at"] = db_user.get("last_tx_at")
+    target["isModerator"] = bool(db_user.get("is_moderator", False))
+    target["isMember"] = bool(db_user.get("is_member", False))
+    target["platform_sources"] = db_user.get("platform_sources", ["unknown"]) or ["unknown"]
+
+    # Actualizar mapeos
+    discord_to_id = user_cache.get("discord_to_id", {})
+    yt_to_id = user_cache.get("yt_to_id", {})
+
+    if discord_id:
+        discord_to_id[str(discord_id)] = db_id
+    if youtube_id:
+        yt_to_id[str(youtube_id)] = db_id
+
+    user_cache["users"] = users
+    user_cache["discord_to_id"] = discord_to_id
+    user_cache["yt_to_id"] = yt_to_id
+
+    # Ajustar next_id
+    if db_id is not None:
+        current_next = user_cache.get("next_id", 1)
+        if db_id >= current_next:
+            user_cache["next_id"] = db_id + 1
+
+    save_user_cache(user_cache)
 
 
 def link_accounts(discord_id, youtube_id) -> dict:

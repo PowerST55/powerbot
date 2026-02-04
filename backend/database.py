@@ -327,6 +327,123 @@ class DatabaseManager:
         except Error as e:
             logger.warning(f"⚠ Error consultando usuario por YouTube: {e}")
             return None
+
+    def get_user_by_id(self, user_id: int) -> Optional[Dict]:
+        """Obtiene usuario por ID universal desde BD"""
+        if not self.ensure_connection():
+            return None
+
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT * FROM users WHERE id = %s",
+                (int(user_id),)
+            )
+            result = cursor.fetchone()
+            cursor.close()
+
+            if result and result.get('platform_sources'):
+                result['platform_sources'] = json.loads(result['platform_sources'])
+
+            return result
+        except Error as e:
+            logger.warning(f"⚠ Error consultando usuario por ID: {e}")
+            return None
+
+    def get_user_by_name_exact(self, name: str) -> Optional[Dict]:
+        """Obtiene usuario por nombre exacto (case-insensitive) desde BD"""
+        if not self.ensure_connection():
+            return None
+
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT * FROM users WHERE LOWER(name) = LOWER(%s) LIMIT 1",
+                (name,)
+            )
+            result = cursor.fetchone()
+            cursor.close()
+
+            if result and result.get('platform_sources'):
+                result['platform_sources'] = json.loads(result['platform_sources'])
+
+            return result
+        except Error as e:
+            logger.warning(f"⚠ Error consultando usuario por nombre: {e}")
+            return None
+
+    def get_user_by_name_partial(self, name: str) -> Optional[Dict]:
+        """Obtiene usuario por coincidencia parcial en nombre (case-insensitive) desde BD"""
+        if not self.ensure_connection():
+            return None
+
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            like_value = f"%{name}%"
+            cursor.execute(
+                "SELECT * FROM users WHERE LOWER(name) LIKE LOWER(%s) ORDER BY puntos DESC, id ASC LIMIT 1",
+                (like_value,)
+            )
+            result = cursor.fetchone()
+            cursor.close()
+
+            if result and result.get('platform_sources'):
+                result['platform_sources'] = json.loads(result['platform_sources'])
+
+            return result
+        except Error as e:
+            logger.warning(f"⚠ Error consultando usuario por nombre parcial: {e}")
+            return None
+
+    def get_top_users(self, limit: int = 10) -> List[Dict]:
+        """Obtiene top de usuarios por puntos desde BD"""
+        if not self.ensure_connection():
+            return []
+
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT * FROM users ORDER BY puntos DESC, id ASC LIMIT %s",
+                (int(limit),)
+            )
+            results = cursor.fetchall()
+            cursor.close()
+
+            for row in results:
+                if row.get('platform_sources'):
+                    row['platform_sources'] = json.loads(row['platform_sources'])
+            return results
+        except Error as e:
+            logger.warning(f"⚠ Error obteniendo top de usuarios: {e}")
+            return []
+
+    def get_user_rank(self, user_id: int) -> Optional[int]:
+        """Obtiene la posición de un usuario en el ranking global"""
+        if not self.ensure_connection():
+            return None
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                "SELECT puntos FROM users WHERE id = %s",
+                (int(user_id),)
+            )
+            row = cursor.fetchone()
+            if not row:
+                cursor.close()
+                return None
+
+            puntos = row[0]
+            cursor.execute(
+                "SELECT COUNT(*) + 1 FROM users WHERE puntos > %s",
+                (puntos,)
+            )
+            rank_row = cursor.fetchone()
+            cursor.close()
+            return int(rank_row[0]) if rank_row else None
+        except Error as e:
+            logger.warning(f"⚠ Error obteniendo ranking de usuario: {e}")
+            return None
     
     def add_points(self, user_id: int, points: float, source: str = 'unknown') -> bool:
         """Suma puntos a un usuario"""

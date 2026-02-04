@@ -1,7 +1,7 @@
 import os
 import json
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
 from .commands import setup_commands
@@ -74,7 +74,41 @@ class DiscordBot(commands.Bot):
         self.add_view(ComprarPersistentView(bot=self))
         # Sincronizar comandos slash DESPUÉS de registrarlos
         await self.tree.sync()
+        # Iniciar tarea de otorgamiento de puntos de voz
+        self.voice_points_task.start()
         print(f"Sesión iniciada: {self.session_file}")
+
+    @tasks.loop(minutes=5)
+    async def voice_points_task(self):
+        """Tarea que otorga puntos cada 5 minutos a usuarios en canales de voz"""
+        try:
+            voice_users = self.economy_manager.get_all_voice_users()
+            points_amount = self.economy_manager.get_points_per_interval()
+            
+            for user_id in voice_users:
+                # Verificar si el usuario debe ganar puntos
+                if self.economy_manager.get_voice_points_earned(user_id):
+                    result = add_points_to_user(user_id, points_amount)
+                    if result:
+                        try:
+                            member = None
+                            for guild in self.guilds:
+                                member = guild.get_member(user_id)
+                                if member:
+                                    break
+                            
+                            if member:
+                                current_pews = result.get("puntos", 0)
+                                print(f"✓ {points_amount}₱ sumado a {member.name} (voz) | Pews totales: {current_pews:.1f}₱")
+                        except Exception as e:
+                            print(f"⚠ Error mostrando info de puntos de voz: {e}")
+        except Exception as e:
+            print(f"⚠ Error en voice_points_task: {e}")
+    
+    @voice_points_task.before_loop
+    async def before_voice_points_task(self):
+        """Se ejecuta antes de iniciar la tarea, espera a que el bot esté listo"""
+        await self.wait_until_ready()
 
     async def on_ready(self):
         """Se ejecuta cuando el bot está completamente listo"""
@@ -168,6 +202,26 @@ class DiscordBot(commands.Bot):
             print(f"✓ Miembro {member.name} cacacheado")
         except Exception as e:
             print(f"⚠ Error cacacheando nuevo miembro {member.name}: {e}")
+    
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        """Se ejecuta cuando el estado de voz de un usuario cambia"""
+        # Si el usuario es un bot, ignorar
+        if member.bot:
+            return
+        
+        try:
+            # Usuario entra a canal de voz
+            if after.channel is not None and before.channel is None:
+                self.economy_manager.add_voice_user(member.id)
+                print(f"👤 {member.name} entró a canal de voz: {after.channel.name}")
+            
+            # Usuario sale de canal de voz
+            elif after.channel is None and before.channel is not None:
+                self.economy_manager.remove_voice_user(member.id)
+                print(f"👤 {member.name} salió de canal de voz: {before.channel.name}")
+        
+        except Exception as e:
+            print(f"⚠ Error en on_voice_state_update: {e}")
 
     def load_queue(self):
         """Carga la cola desde el archivo JSON."""

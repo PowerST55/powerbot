@@ -659,13 +659,77 @@ def setup_commands(bot):
             )
             embed.add_field(
                 name="💰 Sistema de pews",
-                value=f"• 1.0₱ por cada {bot.points_interval // 60} minutos\n• Se cachean automáticamente\n• Se pueden verificar con /my_pews",
+                value=f"• {bot.economy_manager.get_points_per_interval()}₱ por cada {bot.economy_manager.points_interval // 60} minutos\n• Se cachean automáticamente\n• Se pueden verificar con /pews",
                 inline=False
             )
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(
                 "⚠ No hay canales configurados para ganar pews.",
+                ephemeral=True
+            )
+
+    @bot.tree.command(name="config_points", description="Configura la cantidad de puntos ganados por intervalo (solo moderación)")
+    @app_commands.describe(cantidad="Cantidad de pews a ganar cada 5 minutos (puede ser decimal)")
+    @app_commands.checks.has_role(1181253292274221267)
+    async def config_points(interaction: discord.Interaction, cantidad: str):
+        """Configura cuántos pews se ganan cada 5 minutos en canales de texto y voz."""
+        try:
+            # Parsear cantidad (permite decimales)
+            amount = float(cantidad)
+            
+            if amount <= 0:
+                await interaction.response.send_message(
+                    "❌ La cantidad debe ser mayor a 0.",
+                    ephemeral=True
+                )
+                return
+            
+            # Configurar puntos
+            if bot.economy_manager.set_points_per_interval(amount):
+                embed = discord.Embed(
+                    title="✓ Ganancia de pews configurada",
+                    description=f"Cantidad de pews por intervalo actualizada correctamente",
+                    color=0x00ff00
+                )
+                embed.add_field(
+                    name="💰 Nueva ganancia",
+                    value=f"**{amount}₱** cada 5 minutos",
+                    inline=False
+                )
+                embed.add_field(
+                    name="📍 Aplicable en",
+                    value="• Canales de texto configurados\n• Todos los canales de voz",
+                    inline=False
+                )
+                embed.add_field(
+                    name="📊 Resumen actual",
+                    value=f"• Canales: {len(bot.economy_manager.points_channels)}\n• Usuarios en voz: {len(bot.economy_manager.voice_users)}\n• Estado: {'✅ Habilitado' if bot.economy_manager.points_enabled else '❌ Deshabilitado'}",
+                    inline=False
+                )
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Enviar log
+                await bot.send_log(
+                    f"Configuración de puntos actualizada por {interaction.user.mention}\n"
+                    f"Nueva ganancia: **{amount}₱** por intervalo de 5 minutos",
+                    "INFO"
+                )
+            else:
+                await interaction.response.send_message(
+                    "❌ Error al configurar puntos.",
+                    ephemeral=True
+                )
+        except ValueError:
+            await interaction.response.send_message(
+                f"❌ '{cantidad}' no es un número válido. Usa un número o decimal (ej: 1, 2.5, 0.5)",
+                ephemeral=True
+            )
+        except Exception as e:
+            print(f"Error en config_points: {e}")
+            await interaction.response.send_message(
+                f"❌ Error: {str(e)}",
                 ephemeral=True
             )
 

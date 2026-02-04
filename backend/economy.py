@@ -29,7 +29,9 @@ class EconomyManager:
         self.points_channels = []          # Canales donde se ganan puntos
         self.user_message_count = {}       # {discord_id: {timestamp: count}} para tracking temporal
         self.points_interval = 5 * 60      # 5 minutos en segundos
+        self.points_per_interval = 1       # Puntos ganados por intervalo
         self.points_enabled = True         # Sistema de puntos habilitado/deshabilitado
+        self.voice_users = {}              # {user_id: timestamp_entrada} para tracking de voz
         
         self.load_config()
     
@@ -40,10 +42,12 @@ class EconomyManager:
                 data = json.load(f)
                 self.points_channels = data.get('channels', [])
                 self.points_interval = data.get('interval', 5 * 60)
+                self.points_per_interval = data.get('points_per_interval', 1)
                 self.points_enabled = data.get('enabled', True)
         except FileNotFoundError:
             self.points_channels = []
             self.points_interval = 5 * 60
+            self.points_per_interval = 1
             self.points_enabled = True
             self.save_config()
     
@@ -52,6 +56,7 @@ class EconomyManager:
         data = {
             'channels': self.points_channels,
             'interval': self.points_interval,
+            'points_per_interval': self.points_per_interval,
             'enabled': self.points_enabled
         }
         with open(self.points_config_file, 'w', encoding='utf-8') as f:
@@ -181,3 +186,98 @@ class EconomyManager:
             # Eliminar usuario si no tiene más mensajes
             if not self.user_message_count[user_id_str]:
                 del self.user_message_count[user_id_str]
+    
+    def add_voice_user(self, user_id: int) -> None:
+        """Registra cuando un usuario entra a un canal de voz
+        
+        Args:
+            user_id: ID del usuario de Discord
+        """
+        user_id_str = str(user_id)
+        self.voice_users[user_id_str] = int(time.time())
+    
+    def remove_voice_user(self, user_id: int) -> None:
+        """Registra cuando un usuario sale de un canal de voz
+        
+        Args:
+            user_id: ID del usuario de Discord
+        """
+        user_id_str = str(user_id)
+        if user_id_str in self.voice_users:
+            del self.voice_users[user_id_str]
+    
+    def get_voice_points_earned(self, user_id: int) -> bool:
+        """Verifica si un usuario en voz debe ganar puntos
+        
+        Args:
+            user_id: ID del usuario de Discord
+            
+        Returns:
+            True si debe ganar puntos, False si no
+        """
+        if not self.points_enabled:
+            return False
+        
+        user_id_str = str(user_id)
+        if user_id_str not in self.voice_users:
+            return False
+        
+        entry_time = self.voice_users[user_id_str]
+        current_time = int(time.time())
+        time_elapsed = current_time - entry_time
+        
+        # Si ha pasado el intervalo de puntos, retornar True
+        if time_elapsed >= self.points_interval:
+            # Actualizar el timestamp para la próxima ganancia
+            self.voice_users[user_id_str] = current_time
+            return True
+        
+        return False
+    
+    def get_all_voice_users(self) -> list:
+        """Obtiene lista de todos los usuarios en voz
+        
+        Returns:
+            Lista de IDs de usuarios en canales de voz
+        """
+        return [int(user_id) for user_id in self.voice_users.keys()]
+    
+    def set_points_per_interval(self, amount: float) -> bool:
+        """Establece la cantidad de puntos ganados por intervalo
+        
+        Args:
+            amount: Cantidad de puntos a ganar por intervalo (puede ser decimal)
+            
+        Returns:
+            True si se configuró correctamente
+        """
+        if amount <= 0:
+            return False
+        
+        self.points_per_interval = amount
+        self.save_config()
+        print(f"✓ Puntos por intervalo establecidos a: {amount}")
+        return True
+    
+    def get_points_per_interval(self) -> float:
+        """Obtiene la cantidad de puntos ganados por intervalo
+        
+        Returns:
+            Cantidad de puntos por intervalo
+        """
+        return self.points_per_interval
+    
+    def get_config_summary(self) -> dict:
+        """Obtiene un resumen de la configuración actual
+        
+        Returns:
+            Dict con la configuración del sistema de puntos
+        """
+        return {
+            'enabled': self.points_enabled,
+            'channels': len(self.points_channels),
+            'points_per_interval': self.points_per_interval,
+            'interval_minutes': self.points_interval / 60,
+            'active_voice_users': len(self.voice_users)
+        }
+

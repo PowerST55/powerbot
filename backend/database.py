@@ -136,6 +136,12 @@ class DatabaseManager:
                     INDEX idx_updated (updated_at)
                 )
             """)
+
+            # Migración: agregar columna last_tx_at si falta
+            cursor.execute("SHOW COLUMNS FROM users LIKE 'last_tx_at'")
+            if cursor.fetchone() is None:
+                cursor.execute("ALTER TABLE users ADD COLUMN last_tx_at TIMESTAMP NULL")
+                logger.info("✓ Columna last_tx_at agregada a users")
             
             # Tabla de transacciones
             cursor.execute("""

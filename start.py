@@ -26,7 +26,7 @@ def main():
             print("[ERROR] TOKEN no encontrado en keys/.env")
             sys.exit(1)
         
-        print("\n✅ Iniciando PowerBot en Teramont")
+        print("\n[OK] Iniciando PowerBot en Teramont")
         print("=" * 50)
         print(f"Token configurado: {token[:10]}...")
         print("=" * 50 + "\n")

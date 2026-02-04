@@ -1,6 +1,28 @@
 {
-  "users": [],
-  "discord_to_id": {},
-  "yt_to_id": {},
-  "next_id": 1
+    "users": [
+        {
+            "id": 1,
+            "youtube_id": null,
+            "discord_id": "901680662967361568",
+            "name": "PowerBot",
+            "avatar_url": null,
+            "avatar_local": null,
+            "avatar_discord_url": "https://cdn.discordapp.com/avatars/901680662967361568/3800f701831d10b05f7134df7aaefa59.png?size=1024",
+            "avatar_discord_local": "avatars/discord_901680662967361568.jpg",
+            "isModerator": false,
+            "isMember": false,
+            "puntos": 0,
+            "platform_sources": [
+                "discord"
+            ],
+            "is_moderator": 0,
+            "is_member": 0,
+            "updated_at": "2026-02-04T17:12:55.459510"
+        }
+    ],
+    "discord_to_id": {
+        "901680662967361568": 1
+    },
+    "yt_to_id": {},
+    "next_id": 2
 }

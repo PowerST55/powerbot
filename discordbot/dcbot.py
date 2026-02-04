@@ -268,7 +268,10 @@ class DiscordBot(commands.Bot):
         try:
             with open(self.notification_channel_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                self.notification_channel = data.get('channel_id')
+                # Protección: si es lista vacía, crear dict
+                if isinstance(data, list):
+                    data = {}
+                self.notification_channel = data.get('channel_id') if isinstance(data, dict) else None
         except FileNotFoundError:
             self.notification_channel = None
 
@@ -283,7 +286,10 @@ class DiscordBot(commands.Bot):
         try:
             with open(self.log_channel_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                self.log_channel = data.get('channel_id')
+                # Protección: si es lista vacía, crear dict
+                if isinstance(data, list):
+                    data = {}
+                self.log_channel = data.get('channel_id') if isinstance(data, dict) else None
         except FileNotFoundError:
             self.log_channel = None
 

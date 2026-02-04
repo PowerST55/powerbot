@@ -591,18 +591,25 @@ def setup_commands(bot):
     @app_commands.checks.has_role(1181253292274221267)
     async def add_points_channel(interaction: discord.Interaction, channel: discord.TextChannel):
         """Agrega un canal a la lista para ganar pews por mensajes."""
-        if bot.add_points_channel(channel.id):
-            embed = discord.Embed(
-                title="✓ Canal agregado",
-                description=f"{channel.mention} ha sido agregado a la lista de canales para ganar pews.",
-                color=0x00ff00
-            )
-            embed.add_field(name="💰 Recompensa", value="1.0₱ (pew) por cada 5 minutos hablando", inline=False)
-            embed.add_field(name="📋 Canales activos", value=f"{len(bot.points_channels)} canales", inline=True)
-            await interaction.response.send_message(embed=embed)
-        else:
+        try:
+            if bot.economy_manager.add_points_channel(channel.id):
+                embed = discord.Embed(
+                    title="✓ Canal agregado",
+                    description=f"{channel.mention} ha sido agregado a la lista de canales para ganar pews.",
+                    color=0x00ff00
+                )
+                embed.add_field(name="💰 Recompensa", value="1.0₱ (pew) por cada 5 minutos hablando", inline=False)
+                embed.add_field(name="📋 Canales activos", value=f"{len(bot.economy_manager.points_channels)} canales", inline=True)
+                await interaction.response.send_message(embed=embed)
+            else:
+                await interaction.response.send_message(
+                    f"⚠ El canal {channel.mention} ya está en la lista de canales para ganar pews.",
+                    ephemeral=True
+                )
+        except Exception as e:
+            print(f"Error al agregar canal: {e}")
             await interaction.response.send_message(
-                f"⚠ El canal {channel.mention} ya está en la lista de canales para ganar pews.",
+                f"❌ Error al agregar canal: {str(e)}",
                 ephemeral=True
             )
 
@@ -611,17 +618,24 @@ def setup_commands(bot):
     @app_commands.checks.has_role(1181253292274221267)
     async def remove_points_channel(interaction: discord.Interaction, channel: discord.TextChannel):
         """Remueve un canal de la lista para ganar pews."""
-        if bot.remove_points_channel(channel.id):
-            embed = discord.Embed(
-                title="✓ Canal removido",
-                description=f"{channel.mention} ha sido removido de la lista de canales para ganar pews.",
-                color=0xff6600
-            )
-            embed.add_field(name="📋 Canales activos", value=f"{len(bot.points_channels)} canales", inline=True)
-            await interaction.response.send_message(embed=embed)
-        else:
+        try:
+            if bot.economy_manager.remove_points_channel(channel.id):
+                embed = discord.Embed(
+                    title="✓ Canal removido",
+                    description=f"{channel.mention} ha sido removido de la lista de canales para ganar pews.",
+                    color=0xff6600
+                )
+                embed.add_field(name="📋 Canales activos", value=f"{len(bot.economy_manager.points_channels)} canales", inline=True)
+                await interaction.response.send_message(embed=embed)
+            else:
+                await interaction.response.send_message(
+                    f"⚠ El canal {channel.mention} no está en la lista de canales para ganar pews.",
+                    ephemeral=True
+                )
+        except Exception as e:
+            print(f"Error al remover canal: {e}")
             await interaction.response.send_message(
-                f"⚠ El canal {channel.mention} no está en la lista de canales para ganar pews.",
+                f"❌ Error al remover canal: {str(e)}",
                 ephemeral=True
             )
 
@@ -2346,7 +2360,38 @@ def setup_commands(bot):
     @bot.tree.error
     async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
         print(f"Error en comando: {error}")  # Logging adicional
+
+        async def _send_ephemeral(message: str):
+            if interaction.response.is_done():
+                await interaction.followup.send(message, ephemeral=True)
+            else:
+                await interaction.response.send_message(message, ephemeral=True)
+
         if isinstance(error, app_commands.MissingRole):
-            await interaction.response.send_message("Tu no eres DJ, tonto!", ephemeral=True)
+            role_id = error.missing_role
+            role_name = None
+            if interaction.guild:
+                role = interaction.guild.get_role(role_id)
+                role_name = role.name if role else None
+            if role_name:
+                await _send_ephemeral(f"No tienes permiso. Necesitas el rol: **{role_name}**.")
+            else:
+                await _send_ephemeral(f"No tienes permiso. Necesitas el rol con ID: **{role_id}**.")
+        elif isinstance(error, app_commands.MissingAnyRole):
+            role_names = []
+            if interaction.guild:
+                for role_id in error.missing_roles:
+                    role = interaction.guild.get_role(role_id)
+                    if role:
+                        role_names.append(role.name)
+            if role_names:
+                roles_text = ", ".join(f"**{name}**" for name in role_names)
+                await _send_ephemeral(f"No tienes permiso. Necesitas uno de estos roles: {roles_text}.")
+            else:
+                roles_text = ", ".join(str(role_id) for role_id in error.missing_roles)
+                await _send_ephemeral(f"No tienes permiso. Necesitas uno de estos roles (IDs): {roles_text}.")
+        elif isinstance(error, app_commands.MissingPermissions):
+            perms_text = ", ".join(error.missing_permissions)
+            await _send_ephemeral(f"No tienes permiso. Te faltan permisos: **{perms_text}**.")
         else:
-            await interaction.response.send_message("Ocurrió un error inesperado.", ephemeral=True)
+            await _send_ephemeral("Ocurrió un error inesperado.")

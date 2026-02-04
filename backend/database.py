@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 import logging
+import threading
+import time
 
 # Configurar logging PRIMERO
 logging.basicConfig(level=logging.INFO)
@@ -43,10 +45,13 @@ class DatabaseManager:
         self.config = config_dict
         self.connection = None
         self.is_connected = False
+        self._reconnect_thread = None
+        self._stop_reconnect = False
+        self._reconnect_interval = 10
         self.connect()
     
-    def connect(self):
-        """Establece conexión con la BD con reintentos"""
+    def _connect_once(self) -> bool:
+        """Intenta conectar una sola vez a la BD."""
         try:
             self.connection = mysql.connector.connect(**self.config)
             if self.connection.is_connected():
@@ -60,6 +65,49 @@ class DatabaseManager:
             logger.warning(f"⚠ No se pudo conectar a BD: {e}")
             logger.warning("  Los datos se guardarán en caché local y se sincronizarán cuando la BD esté disponible")
             return False
+
+        self.is_connected = False
+        return False
+
+    def _start_reconnect_loop(self) -> None:
+        """Inicia un hilo en segundo plano para reconectar automáticamente."""
+        if self._reconnect_thread and self._reconnect_thread.is_alive():
+            return
+
+        self._stop_reconnect = False
+
+        def _loop():
+            while not self._stop_reconnect:
+                if self._connect_once():
+                    return
+                time.sleep(self._reconnect_interval)
+
+        self._reconnect_thread = threading.Thread(
+            target=_loop,
+            name="db-auto-reconnect",
+            daemon=True,
+        )
+        self._reconnect_thread.start()
+
+    def connect(self) -> bool:
+        """Establece conexión con la BD y arranca reintentos automáticos."""
+        if self._connect_once():
+            return True
+        self._start_reconnect_loop()
+        return False
+
+    def ensure_connection(self) -> bool:
+        """Verifica y restablece la conexión si es necesario."""
+        if self.connection and self.connection.is_connected():
+            self.is_connected = True
+            return True
+
+        self.is_connected = False
+        if self._connect_once():
+            return True
+
+        self._start_reconnect_loop()
+        return False
     
     def _create_tables(self):
         """Crea las tablas necesarias si no existen"""
@@ -168,7 +216,7 @@ class DatabaseManager:
         Returns:
             bool: True si se sincronizó exitosamente
         """
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             logger.debug("⚠ Sin conexión a BD, usuario NO sincronizado")
             return False
         
@@ -229,7 +277,7 @@ class DatabaseManager:
     
     def get_user_by_discord_id(self, discord_id: str) -> Optional[Dict]:
         """Obtiene usuario por discord_id desde BD"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return None
         
         try:
@@ -251,7 +299,7 @@ class DatabaseManager:
     
     def get_user_by_youtube_id(self, youtube_id: str) -> Optional[Dict]:
         """Obtiene usuario por youtube_id desde BD"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return None
         
         try:
@@ -273,7 +321,7 @@ class DatabaseManager:
     
     def add_points(self, user_id: int, points: float, source: str = 'unknown') -> bool:
         """Suma puntos a un usuario"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return False
         
         try:
@@ -298,7 +346,7 @@ class DatabaseManager:
     
     def subtract_points(self, user_id: int, points: float, source: str = 'unknown') -> bool:
         """Resta puntos a un usuario"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return False
         
         try:
@@ -324,7 +372,7 @@ class DatabaseManager:
     def log_transaction(self, user_id: int, username: str, platform: str, 
                        tx_type: str, amount: float, balance_after: float) -> bool:
         """Registra una transacción"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return False
         
         try:
@@ -344,7 +392,7 @@ class DatabaseManager:
     
     def get_user_transactions(self, user_id: int, limit: int = 100) -> List[Dict]:
         """Obtiene transacciones de un usuario"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return []
         
         try:
@@ -362,7 +410,7 @@ class DatabaseManager:
     
     def link_accounts(self, discord_id: str, youtube_id: str) -> bool:
         """Vincula cuentas Discord y YouTube"""
-        if not self.is_connected or not self.connection.is_connected():
+        if not self.ensure_connection():
             return False
         
         try:
@@ -390,6 +438,7 @@ class DatabaseManager:
     
     def close(self):
         """Cierra la conexión"""
+        self._stop_reconnect = True
         if self.connection and self.connection.is_connected():
             self.connection.close()
             self.is_connected = False

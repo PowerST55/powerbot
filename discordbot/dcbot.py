@@ -353,10 +353,11 @@ class DiscordBot(commands.Bot):
             try:
                 # Procesar mensaje y determinar si gana puntos
                 if self.economy_manager.process_message(message.author.id):
-                    result = add_points_to_user(message.author.id, 1)
+                    points_amount = self.economy_manager.get_points_per_interval()
+                    result = add_points_to_user(message.author.id, points_amount)
                     if result:
                         current_pews = result.get("puntos", 0)
-                        print(f"✓ 1.0₱ sumado a {message.author.name} | Tu cantidad de Pews es: {current_pews:.1f}₱")
+                        print(f"✓ {points_amount}₱ sumado a {message.author.name} | Tu cantidad de Pews es: {current_pews:.1f}₱")
             except Exception as e:
                 print(f"⚠ Error procesando ganancia de puntos: {e}")
         

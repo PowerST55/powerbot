@@ -78,15 +78,15 @@ class DiscordBot(commands.Bot):
         self.voice_points_task.start()
         print(f"Sesión iniciada: {self.session_file}")
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(seconds=60)
     async def voice_points_task(self):
-        """Tarea que otorga puntos cada 5 minutos a usuarios en canales de voz"""
+        """Tarea que otorga puntos según el intervalo configurado a usuarios en canales de voz"""
         try:
             voice_users = self.economy_manager.get_all_voice_users()
             points_amount = self.economy_manager.get_points_per_interval()
             
             for user_id in voice_users:
-                # Verificar si el usuario debe ganar puntos
+                # Verificar si el usuario debe ganar puntos según el intervalo configurado
                 if self.economy_manager.get_voice_points_earned(user_id):
                     result = add_points_to_user(user_id, points_amount)
                     if result:
@@ -210,15 +210,22 @@ class DiscordBot(commands.Bot):
             return
         
         try:
-            # Usuario entra a canal de voz
+            # Usuario entra a canal de voz (desde ningún canal)
             if after.channel is not None and before.channel is None:
                 self.economy_manager.add_voice_user(member.id)
                 print(f"👤 {member.name} entró a canal de voz: {after.channel.name}")
             
-            # Usuario sale de canal de voz
+            # Usuario sale de canal de voz (a ningún canal)
             elif after.channel is None and before.channel is not None:
                 self.economy_manager.remove_voice_user(member.id)
                 print(f"👤 {member.name} salió de canal de voz: {before.channel.name}")
+            
+            # Usuario se mueve entre canales (importante para bots de crear salas)
+            elif after.channel is not None and before.channel is not None and after.channel.id != before.channel.id:
+                # Mantener el tracking continuo, simplemente actualizar el timestamp
+                # para evitar que pierda progreso al moverse
+                print(f"🔄 {member.name} se movió de {before.channel.name} a {after.channel.name}")
+                # No hacer nada especial, el usuario sigue en voz
         
         except Exception as e:
             print(f"⚠ Error en on_voice_state_update: {e}")

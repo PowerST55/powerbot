@@ -11,6 +11,7 @@ def run(cmd: str) -> None:
 
 
 def main() -> None:
+    remote = sys.argv[1] if len(sys.argv) > 1 else "power"
     version_file = os.path.join(".git", "version.txt")
     if os.path.exists(version_file):
         with open(version_file, "r", encoding="utf-8") as f:
@@ -25,7 +26,7 @@ def main() -> None:
 
     run("git add .")
     run(f'git commit -m "v{n}"')
-    run("git push origin master")
+    run(f"git push {remote} master")
 
 
 if __name__ == "__main__":

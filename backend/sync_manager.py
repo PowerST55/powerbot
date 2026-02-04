@@ -85,14 +85,17 @@ class SyncManager:
         - Los puntos se suman si están desfasados
         """
         merged = user_local.copy()
-        
-        local_updated = user_local.get('updated_at', 0)
-        db_updated = user_db.get('updated_at', 0)
+
+        local_updated_raw = user_local.get('updated_at')
+        db_updated_raw = user_db.get('updated_at')
+
+        local_updated = self._normalize_timestamp(local_updated_raw)
+        db_updated = self._normalize_timestamp(db_updated_raw)
         
         # Si la BD tiene datos más recientes, usar esos
         if db_updated > local_updated:
             logger.info(f"  → Usando datos de BD para {user_local.get('name')} "
-                       f"(BD: {db_updated} > Local: {local_updated})")
+                       f"(BD: {db_updated.isoformat()} > Local: {local_updated.isoformat()})")
             
             # Copiar campos de BD (excepto puntos que requiere lógica especial)
             for key in ['name', 'avatar_url', 'avatar_discord_url', 'is_moderator', 'is_member']:
@@ -116,6 +119,27 @@ class SyncManager:
         merged['platform_sources'] = list(local_platforms | db_platforms)
         
         return merged
+
+    @staticmethod
+    def _normalize_timestamp(value) -> datetime:
+        """Convierte timestamps variados a datetime para comparaciones seguras."""
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, (int, float)):
+            try:
+                return datetime.fromtimestamp(value)
+            except (OSError, ValueError):
+                return datetime.min
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value)
+            except ValueError:
+                # Intentar formato común MySQL: 'YYYY-MM-DD HH:MM:SS'
+                try:
+                    return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    return datetime.min
+        return datetime.min
     
     def _save_both_systems(self, user_dict: Dict) -> bool:
         """Guarda un usuario en ambos sistemas (JSON + BD)

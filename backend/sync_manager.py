@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ except ImportError:
         from database import DatabaseManager
     except ImportError as e:
         logger.warning(f"⚠ No se pudo importar DatabaseManager: {e}")
-        DatabaseManager = None
+        DatabaseManager = Any
 
 
 class SyncManager:

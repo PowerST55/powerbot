@@ -124,6 +124,7 @@ class DatabaseManager:
                     avatar_url TEXT,
                     avatar_discord_url TEXT,
                     puntos DECIMAL(10, 2) DEFAULT 0,
+                    last_tx_at TIMESTAMP NULL,
                     is_moderator BOOLEAN DEFAULT FALSE,
                     is_member BOOLEAN DEFAULT FALSE,
                     platform_sources JSON DEFAULT '["unknown"]',
@@ -237,13 +238,14 @@ class DatabaseManager:
             cursor.execute("""
                 INSERT INTO users 
                 (youtube_id, discord_id, name, avatar_url, avatar_discord_url, 
-                 puntos, is_moderator, is_member, platform_sources, synced_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                 puntos, last_tx_at, is_moderator, is_member, platform_sources, synced_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
                 avatar_url = VALUES(avatar_url),
                 avatar_discord_url = VALUES(avatar_discord_url),
                 puntos = VALUES(puntos),
+                last_tx_at = VALUES(last_tx_at),
                 is_moderator = VALUES(is_moderator),
                 is_member = VALUES(is_member),
                 platform_sources = VALUES(platform_sources),
@@ -255,6 +257,7 @@ class DatabaseManager:
                 user_dict.get('avatar_url'),
                 user_dict.get('avatar_discord_url'),
                 float(user_dict.get('puntos', 0)),
+                user_dict.get('last_tx_at'),
                 bool(user_dict.get('isModerator', False)),
                 bool(user_dict.get('isMember', False)),
                 platform_sources
@@ -327,7 +330,7 @@ class DatabaseManager:
         try:
             cursor = self.connection.cursor()
             cursor.execute(
-                "UPDATE users SET puntos = puntos + %s, updated_at = NOW() WHERE id = %s",
+                "UPDATE users SET puntos = puntos + %s, updated_at = NOW(), last_tx_at = NOW() WHERE id = %s",
                 (float(points), user_id)
             )
             
@@ -352,7 +355,7 @@ class DatabaseManager:
         try:
             cursor = self.connection.cursor()
             cursor.execute(
-                "UPDATE users SET puntos = puntos - %s, updated_at = NOW() WHERE id = %s",
+                "UPDATE users SET puntos = puntos - %s, updated_at = NOW(), last_tx_at = NOW() WHERE id = %s",
                 (float(points), user_id)
             )
             

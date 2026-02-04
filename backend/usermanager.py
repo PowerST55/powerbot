@@ -510,6 +510,7 @@ def add_points_to_user(user_id, points: float):
     # Si encontró el usuario, sumar puntos
     if user:
         user["puntos"] = user.get("puntos", 0) + points
+        user["last_tx_at"] = datetime.now().isoformat()
         user_cache["users"] = users
         save_user_cache(user_cache)
         
@@ -568,6 +569,7 @@ def subtract_points_from_user(user_id, points: float):
         current_points = user.get("puntos", 0)
         if current_points >= points:
             user["puntos"] = current_points - points
+            user["last_tx_at"] = datetime.now().isoformat()
             user_cache["users"] = users
             save_user_cache(user_cache)
             

@@ -1,20 +1,19 @@
 import json
 import logging
 from datetime import datetime
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional, List, Any, TYPE_CHECKING
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Importar DatabaseManager (relativo o absoluto)
-try:
-    from .database import DatabaseManager
-except ImportError:
+if TYPE_CHECKING:
     try:
+        from .database import DatabaseManager
+    except ImportError:
         from database import DatabaseManager
-    except ImportError as e:
-        logger.warning(f"⚠ No se pudo importar DatabaseManager: {e}")
-        DatabaseManager = Any
+else:
+    DatabaseManager = Any
 
 
 class SyncManager:
@@ -102,16 +101,30 @@ class SyncManager:
                 if key in user_db:
                     merged[key] = user_db[key]
         
-        # Manejar puntos especialmente (fusión en lugar de sobrescribir)
+        # Manejar puntos usando timestamp de última transacción
         local_points = float(user_local.get('puntos', 0))
         db_points = float(user_db.get('puntos', 0))
-        
+
+        local_tx = self._normalize_timestamp(user_local.get('last_tx_at'))
+        db_tx = self._normalize_timestamp(user_db.get('last_tx_at'))
+
         if local_points != db_points:
             logger.warning(f"  ⚠ Desfase de puntos en {user_local.get('name')}: "
                           f"Local={local_points}, BD={db_points}")
-            # Mantener el valor más alto para evitar pérdida
-            merged['puntos'] = max(local_points, db_points)
-            logger.info(f"     → Manteniendo máximo: {merged['puntos']}")
+
+            if db_tx > local_tx:
+                merged['puntos'] = db_points
+                merged['last_tx_at'] = user_db.get('last_tx_at')
+                logger.info("     → Usando puntos de BD (transacción más reciente)")
+            elif local_tx > db_tx:
+                merged['puntos'] = local_points
+                merged['last_tx_at'] = user_local.get('last_tx_at')
+                logger.info("     → Usando puntos locales (transacción más reciente)")
+            else:
+                # Sin timestamp confiable, conservar local para evitar revertir gastos recientes
+                merged['puntos'] = local_points
+                merged['last_tx_at'] = user_local.get('last_tx_at')
+                logger.info("     → Sin timestamp confiable, conservando local")
         
         # Fusionar plataformas
         local_platforms = set(user_local.get('platform_sources', []))

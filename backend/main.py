@@ -17,7 +17,8 @@ from websocket_server import WebSocketServer
 from usermanager import (
     load_user_cache, save_user_cache, cache_user_info,
     load_banned_users, save_banned_users,
-    ban_user_by_name, unban_user_by_name, show_ban_list
+    ban_user_by_name, unban_user_by_name, show_ban_list,
+    init_database  # ← Añadido para inicializar BD
 )
 from youtube_api import authenticate_youtube_api, get_live_chat_id, send_message, send_message_async
 #from activities.spin import add_users_to_roulette, aggrul
@@ -36,6 +37,10 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
+
+# Inicializar sistema de BD
+print("🔄 Inicializando sistema de BD...")
+init_database()
 
 # Variables globales mínimas
 

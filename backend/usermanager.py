@@ -2,9 +2,29 @@ import json
 import os
 import requests
 import time
+import logging
 
 import shutil
 from datetime import datetime
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Importar gestores de BD y sincronización desde el cliente CENTRAL (PC)
+try:
+    import sys
+    backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+    if backend_root not in sys.path:
+        sys.path.insert(0, backend_root)
+    
+    from database import DatabaseManager
+    from sync_manager import SyncManager
+    DB_AVAILABLE = True
+    logger.info("✓ Importando BD desde cliente central (PC)")
+except ImportError as e:
+    logger.warning(f"⚠ No se pudieron importar módulos de BD: {e}")
+    DB_AVAILABLE = False
 
 # Nueva ruta base para los archivos JSON
 BASE_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
@@ -14,6 +34,33 @@ if not os.path.exists(BASE_DATA_DIR):
 CACHE_FILE = os.path.join(BASE_DATA_DIR, "user_cache.json")
 BAN_FILE = os.path.join(BASE_DATA_DIR, "banned_users.json")
 CUSTOM_FILE = os.path.join(BASE_DATA_DIR, "custom_users.json")
+
+# Gestores globales de BD y sincronización
+db_manager = None
+sync_manager = None
+
+def init_database():
+    """Inicializa el gestor de BD y sincronización
+    
+    Se conecta a la BD CENTRAL que está en el PC cliente
+    Si falla, el sistema continúa solo con caché JSON.
+    """
+    global db_manager, sync_manager, DB_AVAILABLE
+    
+    if not DB_AVAILABLE:
+        logger.warning("⚠ Módulos de BD no disponibles")
+        return False
+    
+    try:
+        logger.info("🔄 Inicializando sincronización con BD CENTRAL (PC)...")
+        db_manager = DatabaseManager()
+        sync_manager = SyncManager(db_manager, save_user_cache, load_user_cache)
+        logger.info("✓ Sincronización con BD central iniciada (Discord Bot ↔ PC)")
+        return True
+    except Exception as e:
+        logger.warning(f"⚠ No se pudo inicializar BD: {e}")
+        logger.warning("  El sistema funcionará solo con caché JSON")
+        return False
 
 # -------------------- Gestión de usuarios --------------------
 
@@ -243,7 +290,7 @@ def save_user_cache(user_cache):
         raise
 
 
-def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=False):
+def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=False, skip_save=False):
     """Agrega o actualiza la información del usuario en la caché y descarga su avatar."""
     user_cache = load_user_cache()
     users = user_cache.get("users", [])
@@ -303,7 +350,12 @@ def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=
     user_cache["yt_to_id"] = yt_to_id
     if "discord_to_id" not in user_cache:
         user_cache["discord_to_id"] = {}
-    save_user_cache(user_cache)
+    
+    # Solo guardar si skip_save es False (modo normal)
+    if not skip_save:
+        save_user_cache(user_cache)
+    
+    return user_cache
 
 
 def cache_discord_user(discord_id, name, avatar_url=None):
@@ -349,7 +401,7 @@ def cache_discord_user(discord_id, name, avatar_url=None):
         users.append(user)
         discord_to_id[discord_id_str] = next_id
         user_cache["next_id"] = next_id + 1
-        print(f"✓ Nuevo usuario Discord cacacheado: {name} (ID: {discord_id})")
+        logger.info(f"✓ Nuevo usuario Discord cacacheado: {name} (ID: {discord_id})")
     else:
         # Actualizar datos
         if user["name"] != name:
@@ -361,7 +413,7 @@ def cache_discord_user(discord_id, name, avatar_url=None):
             user["platform_sources"] = []
         if "discord" not in user["platform_sources"]:
             user["platform_sources"].append("discord")
-            print(f"✓ Plataforma Discord agregada a usuario: {name}")
+            logger.info(f"✓ Plataforma Discord agregada a usuario: {name}")
     
     # Descargar avatar de Discord si es necesario
     if avatar_url:
@@ -382,6 +434,11 @@ def cache_discord_user(discord_id, name, avatar_url=None):
     user_cache["yt_to_id"] = yt_to_id
     user_cache["discord_to_id"] = discord_to_id
     save_user_cache(user_cache)
+    
+    # Sincronizar a BD si está disponible
+    if sync_manager:
+        sync_manager.sync_user_bidirectional(user, source='local')
+    
     return user["id"]  # Retornar el ID único del usuario para futuro uso
 
 
@@ -408,6 +465,8 @@ def get_user_by_id(user_id):
 
 def add_points_to_user(user_id, points: float):
     """Suma puntos a un usuario (por discord_id, youtube_id, o ID universal).
+    
+    Sincroniza automáticamente con BD si está disponible.
     
     Args:
         user_id: ID del usuario (discord_id, youtube_id, o ID universal)
@@ -447,6 +506,14 @@ def add_points_to_user(user_id, points: float):
         user["puntos"] = user.get("puntos", 0) + points
         user_cache["users"] = users
         save_user_cache(user_cache)
+        
+        # Sincronizar con BD si está disponible
+        if sync_manager:
+            sync_manager.sync_user_bidirectional(user, source='local')
+        elif db_manager and db_manager.is_connected:
+            db_manager.add_points(user.get('id'), points, source='local')
+        
+        logger.info(f"✓ Se añadieron {points} puntos a {user.get('name')}")
         return user
     
     return None
@@ -454,6 +521,8 @@ def add_points_to_user(user_id, points: float):
 
 def subtract_points_from_user(user_id, points: float):
     """Resta puntos a un usuario (por discord_id, youtube_id, o ID universal).
+    
+    Sincroniza automáticamente con BD si está disponible.
     
     Args:
         user_id: ID del usuario (discord_id, youtube_id, o ID universal)
@@ -495,9 +564,18 @@ def subtract_points_from_user(user_id, points: float):
             user["puntos"] = current_points - points
             user_cache["users"] = users
             save_user_cache(user_cache)
+            
+            # Sincronizar con BD si está disponible
+            if sync_manager:
+                sync_manager.sync_user_bidirectional(user, source='local')
+            elif db_manager and db_manager.is_connected:
+                db_manager.subtract_points(user.get('id'), points, source='local')
+            
+            logger.info(f"✓ Se restaron {points} puntos a {user.get('name')}")
             return user
         else:
             # No tiene suficientes puntos
+            logger.warning(f"⚠ Usuario {user.get('name')} no tiene suficientes puntos ({current_points}/{points})")
             return None
     
     return None
@@ -903,8 +981,18 @@ def restore_from_backup(backup_name=None):
         print(f"✅ Cache restaurado exitosamente desde: {backup_name}")
         print(f"   Usuarios restaurados: {len(backup_data.get('users', []))}")
         
+        # Forzar sincronización con BD si está disponible
+        if sync_manager:
+            synced = sync_manager.force_sync_all_to_db()
+            print(f"   ✓ {synced} usuarios sincronizados a BD")
+        
         return True
         
     except Exception as e:
         print(f"❌ Error al restaurar respaldo: {e}")
         return False
+
+
+# ===== INICIALIZACIÓN AUTOMÁTICA =====
+# Inicializar BD al importar el módulo
+init_database()

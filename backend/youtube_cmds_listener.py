@@ -254,17 +254,27 @@ async def youtube_listener(
                     canal_id = item["authorDetails"].get("channelId", "ID no encontrado")
                     is_moderator = item["authorDetails"].get("isChatModerator", False) or item["authorDetails"].get("isChatOwner", False)
                     is_member = item["authorDetails"].get("isChatSponsor", False)
-                    # Guardar en el cache si es moderador o miembro
-                    cache_user_info(canal_id, autor, avatar_url, is_moderator, is_member)
+                    
+                    # SIEMPRE cachear usuarios (con o sin guardar)
+                    if config.skip_old_messages:
+                        # Modo batch: no guardar en cada mensaje
+                        cache_user_info(canal_id, autor, avatar_url, is_moderator, is_member, skip_save=True)
+                    else:
+                        # Modo normal: guardar cada mensaje
+                        cache_user_info(canal_id, autor, avatar_url, is_moderator, is_member)
+                    
+                    # Si estamos ignorando mensajes antiguos, saltar procesamiento de comandos
+                    if config.skip_old_messages:
+                        # Después de procesar todas las páginas de mensajes antiguos,
+                        # cuando ya no haya nextPageToken, resetearemos el flag
+                        continue
+                    
                     if canal_id in banned_users:
                         print(f"El usuario baneado '{autor}' intentó enviar un mensaje: {mensaje}")
                         continue
                     
-                    # Si estamos ignorando mensajes antiguos, solo cachear usuarios sin procesar comandos
-                    if config.skip_old_messages:
-                        continue
-                    
                     print(f"{autor}: {mensaje}")
+
                     
                     # Actualizar tracking de usuarios activos (para !apsall)
                     import time
@@ -1570,10 +1580,15 @@ async def youtube_listener(
                 # Actualizar el token para la próxima página de mensajes
                 next_page_token = response.get("nextPageToken")
                 
-                # Desactivar flag después de la primera carga
-                if config.skip_old_messages:
+                # Desactivar flag cuando ya no hay más mensajes antiguos (cuando no hay nextPageToken)
+                if config.skip_old_messages and not next_page_token:
+                    from usermanager import save_user_cache, load_user_cache
+                    user_cache = load_user_cache()
+                    save_user_cache(user_cache)
                     config.skip_old_messages = False
-                    print("Mensajes antiguos cargados. Ahora procesando mensajes nuevos...")
+                    print("✓ Mensajes antiguos cargados. Caché guardado. Ahora procesando mensajes nuevos...")
+
+
                 
                 intentos = 0  # Reiniciar el contador si la ejecución fue exitosa
                 await asyncio.sleep(waittime)  # Evita hacer demasiadas peticiones seguidas

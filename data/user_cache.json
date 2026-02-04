@@ -11,7 +11,7 @@
             "avatar_discord_local": "avatars/discord_1342632235379068959.jpg",
             "isModerator": false,
             "isMember": false,
-            "puntos": 202.0,
+            "puntos": 8.0,
             "platform_sources": [
                 "youtube",
                 "discord"
@@ -28,7 +28,7 @@
             "avatar_discord_local": null,
             "isModerator": true,
             "isMember": false,
-            "puntos": 4,
+            "puntos": 6,
             "platform_sources": [
                 "youtube"
             ]
@@ -38,13 +38,13 @@
             "youtube_id": "UCWRXJgyJOcCn9Cq9OVgZSMA",
             "discord_id": null,
             "name": "@TaffytaMutthonfudge",
-            "avatar_url": "https://yt3.ggpht.com/I1CXQ_znFP1r5n6UGxare4-UcX5G_uSIJPbRbRzMSVzbPrNX0mVih6Juqrva7NEcwbLOxaRfsQ=s88-c-k-c0x00ffffff-no-rj",
+            "avatar_url": "https://yt3.ggpht.com/bhsloJSfO6kUujxdvOEFkxd3ZBozM_7X-lnk2W3cy2E4RJSRIOnxh4jwPIVpb3iR1QicZWhF=s88-c-k-c0x00ffffff-no-rj",
             "avatar_local": "avatars/UCWRXJgyJOcCn9Cq9OVgZSMA.jpg",
             "avatar_discord_url": null,
             "avatar_discord_local": null,
             "isModerator": true,
             "isMember": false,
-            "puntos": 183.3,
+            "puntos": 33.2,
             "platform_sources": [
                 "youtube"
             ]
@@ -60,7 +60,7 @@
             "avatar_discord_local": "avatars/discord_1160608747278839868.jpg",
             "isModerator": false,
             "isMember": false,
-            "puntos": 600.0,
+            "puntos": 846.0,
             "platform_sources": [
                 "youtube",
                 "discord"
@@ -109,7 +109,7 @@
             "avatar_discord_local": null,
             "isModerator": true,
             "isMember": false,
-            "puntos": 8,
+            "puntos": 29,
             "platform_sources": [
                 "youtube"
             ]
@@ -125,7 +125,7 @@
             "avatar_discord_local": "avatars/discord_569614104390664202.jpg",
             "isModerator": false,
             "isMember": false,
-            "puntos": 501.0,
+            "puntos": 1,
             "platform_sources": [
                 "discord"
             ]
@@ -193,6 +193,22 @@
             "platform_sources": [
                 "discord"
             ]
+        },
+        {
+            "id": 15,
+            "youtube_id": "UCuudTA6ti4JZ7dj7hHafPcQ",
+            "discord_id": null,
+            "name": "@Taffy-h5y",
+            "avatar_url": "https://yt3.ggpht.com/Ss5-WeQCriBNRXsr4YYPKjjHlJ15-Rh5GLO7p0ADDj201fyfXoaP11dIHZ5RO2FZh1AQ2WyS-LU=s88-c-k-c0x00ffffff-no-rj",
+            "avatar_local": "avatars/UCuudTA6ti4JZ7dj7hHafPcQ.jpg",
+            "avatar_discord_url": null,
+            "avatar_discord_local": null,
+            "isModerator": false,
+            "isMember": false,
+            "puntos": 0.0,
+            "platform_sources": [
+                "youtube"
+            ]
         }
     ],
     "yt_to_id": {
@@ -203,9 +219,10 @@
         "UCM-miCThwAVJw1WNr6ox-3Q": 9,
         "UCbkilr6dsjnBpBztz9BByyg": 11,
         "UCfmnDNC5cewknX-VkdPq31g": 12,
-        "UCG-05Rv3mXSrh9kNXcoN0zQ": 13
+        "UCG-05Rv3mXSrh9kNXcoN0zQ": 13,
+        "UCuudTA6ti4JZ7dj7hHafPcQ": 15
     },
-    "next_id": 15,
+    "next_id": 16,
     "discord_to_id": {
         "1342632235379068959": 1,
         "1160608747278839868": 5,

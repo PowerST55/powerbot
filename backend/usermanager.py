@@ -13,18 +13,24 @@ logger = logging.getLogger(__name__)
 
 # Importar gestores de BD y sincronización desde el cliente CENTRAL (PC)
 try:
-    import sys
-    backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
-    if backend_root not in sys.path:
-        sys.path.insert(0, backend_root)
-    
-    from database import DatabaseManager
-    from sync_manager import SyncManager
+    from .database import DatabaseManager
+    from .sync_manager import SyncManager
     DB_AVAILABLE = True
     logger.info("✓ Importando BD desde cliente central (PC)")
 except ImportError as e:
-    logger.warning(f"⚠ No se pudieron importar módulos de BD: {e}")
-    DB_AVAILABLE = False
+    try:
+        import sys
+        backend_root = os.path.abspath(os.path.dirname(__file__))
+        if backend_root not in sys.path:
+            sys.path.insert(0, backend_root)
+
+        from database import DatabaseManager
+        from sync_manager import SyncManager
+        DB_AVAILABLE = True
+        logger.info("✓ Importando BD desde cliente central (PC)")
+    except ImportError as e2:
+        logger.warning(f"⚠ No se pudieron importar módulos de BD: {e2}")
+        DB_AVAILABLE = False
 
 # Nueva ruta base para los archivos JSON
 BASE_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))

@@ -791,7 +791,18 @@ def _upsert_user_from_db(db_user: dict):
     target["avatar_url"] = db_user.get("avatar_url")
     target["avatar_discord_url"] = db_user.get("avatar_discord_url")
     target["puntos"] = float(db_user.get("puntos", 0))
-    target["last_tx_at"] = db_user.get("last_tx_at")
+    # Normalizar timestamps a string ISO para JSON
+    target["last_tx_at"] = sync_manager._normalize_timestamp_str(db_user.get("last_tx_at")) if sync_manager else (
+        db_user.get("last_tx_at").isoformat() if isinstance(db_user.get("last_tx_at"), datetime) else db_user.get("last_tx_at")
+    )
+    if "updated_at" in db_user:
+        target["updated_at"] = sync_manager._normalize_timestamp_str(db_user.get("updated_at")) if sync_manager else (
+            db_user.get("updated_at").isoformat() if isinstance(db_user.get("updated_at"), datetime) else db_user.get("updated_at")
+        )
+    if "created_at" in db_user:
+        target["created_at"] = sync_manager._normalize_timestamp_str(db_user.get("created_at")) if sync_manager else (
+            db_user.get("created_at").isoformat() if isinstance(db_user.get("created_at"), datetime) else db_user.get("created_at")
+        )
     target["isModerator"] = bool(db_user.get("is_moderator", False))
     target["isMember"] = bool(db_user.get("is_member", False))
     target["platform_sources"] = db_user.get("platform_sources", ["unknown"]) or ["unknown"]

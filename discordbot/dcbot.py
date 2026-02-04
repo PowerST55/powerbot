@@ -58,7 +58,7 @@ class DiscordBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         print(f"Logged in as {self.user.name}")
-        # Crear carpeta sessions si no existe
+        # Crear carpeta sessions si es que no existe
         sessions_dir = os.path.join(os.path.dirname(__file__), 'sessions')
         os.makedirs(sessions_dir, exist_ok=True)
         # Generar nombre de archivo de sesión

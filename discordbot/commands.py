@@ -2515,3 +2515,62 @@ def setup_commands(bot):
             await _send_ephemeral(f"No tienes permiso. Te faltan permisos: **{perms_text}**.")
         else:
             await _send_ephemeral("Ocurrió un error inesperado.")
+
+    @bot.tree.command(name="confesar", description="Envía una confesión anónima al canal de confesiones")
+    @app_commands.describe(texto="Tu confesión (máximo 2000 caracteres)")
+    async def confesar(interaction: discord.Interaction, texto: str):
+        """Permite a los usuarios enviar confesiones anónimas"""
+        try:
+            # Validar longitud
+            if len(texto) > 2000:
+                await interaction.response.send_message(
+                    "❌ Tu confesión es demasiado larga. Máximo 2000 caracteres.",
+                    ephemeral=True
+                )
+                return
+            
+            if len(texto.strip()) == 0:
+                await interaction.response.send_message(
+                    "❌ No puedes enviar una confesión vacía.",
+                    ephemeral=True
+                )
+                return
+            
+            # ID del canal de confesiones
+            CONFESSIONS_CHANNEL_ID = 1171835914394271816
+            confessions_channel = bot.get_channel(CONFESSIONS_CHANNEL_ID)
+            
+            if not confessions_channel:
+                await interaction.response.send_message(
+                    "❌ El canal de confesiones no está disponible.",
+                    ephemeral=True
+                )
+                return
+            
+            # Crear embed anónimo
+            embed = discord.Embed(
+                title="🤐 Confesión Anónima",
+                description=texto,
+                color=discord.Color.purple(),
+                timestamp=datetime.now(timezone.utc)
+            )
+            embed.set_footer(text="Confesión anónima")
+            
+            # Enviar al canal de confesiones
+            await confessions_channel.send(embed=embed)
+            
+            # Confirmar al usuario (privadamente)
+            await interaction.response.send_message(
+                "✅ Tu confesión ha sido enviada de forma anónima al canal de confesiones.",
+                ephemeral=True
+            )
+            
+            print(f"✓ Confesión anónima enviada por {interaction.user.name}")
+            
+        except Exception as e:
+            print(f"❌ Error en comando confesar: {e}")
+            await interaction.response.send_message(
+                f"❌ Error: {str(e)}",
+                ephemeral=True
+            )
+

@@ -421,6 +421,78 @@ class DatabaseManager:
         """Vincula cuentas Discord y YouTube"""
         if not self.ensure_connection():
             return False
+
+    def upsert_pending_link(self, code: str, discord_id: str, discord_name: str,
+                            created_at: datetime, expires_at: datetime) -> bool:
+        """Guarda/actualiza una vinculación pendiente en BD."""
+        if not self.ensure_connection():
+            return False
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("""
+                INSERT INTO pending_links (code, discord_id, discord_name, created_at, expires_at, synced_at)
+                VALUES (%s, %s, %s, %s, %s, NOW())
+                ON DUPLICATE KEY UPDATE
+                discord_id = VALUES(discord_id),
+                discord_name = VALUES(discord_name),
+                created_at = VALUES(created_at),
+                expires_at = VALUES(expires_at),
+                synced_at = NOW()
+            """, (code, str(discord_id), discord_name, created_at, expires_at))
+
+            self.connection.commit()
+            cursor.close()
+            return True
+        except Error as e:
+            logger.warning(f"⚠ Error guardando pending_link: {e}")
+            return False
+
+    def get_pending_link(self, code: str) -> Optional[Dict]:
+        """Obtiene una vinculación pendiente desde BD."""
+        if not self.ensure_connection():
+            return None
+
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM pending_links WHERE code = %s", (code,))
+            result = cursor.fetchone()
+            cursor.close()
+            return result
+        except Error as e:
+            logger.warning(f"⚠ Error leyendo pending_link: {e}")
+            return None
+
+    def delete_pending_link(self, code: str) -> bool:
+        """Elimina una vinculación pendiente en BD."""
+        if not self.ensure_connection():
+            return False
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("DELETE FROM pending_links WHERE code = %s", (code,))
+            self.connection.commit()
+            cursor.close()
+            return True
+        except Error as e:
+            logger.warning(f"⚠ Error eliminando pending_link: {e}")
+            return False
+
+    def cleanup_expired_pending_links(self) -> int:
+        """Elimina vinculaciones pendientes expiradas en BD."""
+        if not self.ensure_connection():
+            return 0
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("DELETE FROM pending_links WHERE expires_at IS NOT NULL AND expires_at < NOW()")
+            deleted = cursor.rowcount
+            self.connection.commit()
+            cursor.close()
+            return deleted
+        except Error as e:
+            logger.warning(f"⚠ Error limpiando pending_links expirados: {e}")
+            return 0
         
         try:
             cursor = self.connection.cursor()

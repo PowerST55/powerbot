@@ -7,15 +7,18 @@ import os
 import time
 import secrets
 import string
+from datetime import datetime, timedelta
+from typing import Optional
 
 class AccountLinkingManager:
     """Gestor de vinculación de cuentas entre Discord y YouTube"""
     
-    def __init__(self, data_dir: str = None):
+    def __init__(self, data_dir: str = None, db_manager=None):
         """Inicializa el gestor de vinculación
         
         Args:
             data_dir: Directorio donde guardar los datos
+            db_manager: Instancia de DatabaseManager (opcional)
         """
         if data_dir is None:
             data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
@@ -30,6 +33,8 @@ class AccountLinkingManager:
         # {codigo: {discord_id, discord_name, timestamp, timeout}}
         self.pending_links = {}
         
+        self.db = db_manager
+
         # Cargar pendientes del archivo
         self.load_pending_links()
     
@@ -83,6 +88,7 @@ class AccountLinkingManager:
         }
         
         self.save_pending_links()
+        self._sync_pending_link_to_db(code)
         print(f"✓ Vinculación pendiente creada: {code} para {discord_name}")
         return code
     
@@ -99,8 +105,32 @@ class AccountLinkingManager:
         self.load_pending_links()
         
         if code not in self.pending_links:
-            print(f"⚠ Código {code} no encontrado. Códigos disponibles: {list(self.pending_links.keys())}")
-            return None
+            # Intentar obtener desde BD si está disponible
+            if self.db and getattr(self.db, "is_connected", False):
+                db_link = self.db.get_pending_link(code)
+                if db_link:
+                    created_at = db_link.get('created_at')
+                    expires_at = db_link.get('expires_at')
+                    if created_at and expires_at:
+                        created_ts = int(created_at.timestamp())
+                        timeout = int((expires_at - created_at).total_seconds())
+                    else:
+                        created_ts = int(time.time())
+                        timeout = 600
+
+                    self.pending_links[code] = {
+                        'discord_id': db_link.get('discord_id'),
+                        'discord_name': db_link.get('discord_name'),
+                        'timestamp': created_ts,
+                        'timeout': timeout
+                    }
+                    self.save_pending_links()
+                else:
+                    print(f"⚠ Código {code} no encontrado. Códigos disponibles: {list(self.pending_links.keys())}")
+                    return None
+            else:
+                print(f"⚠ Código {code} no encontrado. Códigos disponibles: {list(self.pending_links.keys())}")
+                return None
         
         link_info = self.pending_links[code]
         current_time = int(time.time())
@@ -112,6 +142,8 @@ class AccountLinkingManager:
             # Expiró, eliminar
             del self.pending_links[code]
             self.save_pending_links()
+            if self.db and getattr(self.db, "is_connected", False):
+                self.db.delete_pending_link(code)
             print(f"⚠ Código {code} expiró (edad: {current_time - created_time}s, timeout: {timeout}s)")
             return None
         
@@ -130,6 +162,8 @@ class AccountLinkingManager:
         if code in self.pending_links:
             del self.pending_links[code]
             self.save_pending_links()
+            if self.db and getattr(self.db, "is_connected", False):
+                self.db.delete_pending_link(code)
             return True
         return False
     
@@ -147,10 +181,33 @@ class AccountLinkingManager:
         
         for code in expired_codes:
             del self.pending_links[code]
+            if self.db and getattr(self.db, "is_connected", False):
+                self.db.delete_pending_link(code)
         
         if expired_codes:
             self.save_pending_links()
             print(f"⚠ Limpieza: {len(expired_codes)} códigos expirados removidos")
+        if self.db and getattr(self.db, "is_connected", False):
+            self.db.cleanup_expired_pending_links()
+
+    def _sync_pending_link_to_db(self, code: str) -> None:
+        if not self.db or not getattr(self.db, "is_connected", False):
+            return
+
+        link = self.pending_links.get(code)
+        if not link:
+            return
+
+        created_at = datetime.fromtimestamp(link['timestamp'])
+        expires_at = created_at + timedelta(seconds=link['timeout'])
+
+        self.db.upsert_pending_link(
+            code=code,
+            discord_id=str(link.get('discord_id')),
+            discord_name=link.get('discord_name', ''),
+            created_at=created_at,
+            expires_at=expires_at
+        )
     
     def get_pending_links_count(self) -> int:
         """Obtiene el número de vinculaciones pendientes activas"""

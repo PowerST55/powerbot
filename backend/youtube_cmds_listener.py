@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 from googleapiclient.errors import HttpError
-from usermanager import load_banned_users , load_user_cache, load_custom_users, add_points_to_user, get_user_points, link_accounts, unlink_account
+from usermanager import load_banned_users , load_user_cache, load_custom_users, add_points_to_user, get_user_points, link_accounts, unlink_account, db_manager
 from activities.poll import iniciar_encuesta, resetpoll
 from activities.text2voice import TextToVoice
 from backend.transaction_logger import TransactionLogger
@@ -46,7 +46,8 @@ youtube_economy_manager = YouTubeEconomyManager(
 
 # Inicializar gestor de vinculación de cuentas
 account_linking_manager = AccountLinkingManager(
-    data_dir=os.path.join(os.path.dirname(__file__), '..', 'data')
+    data_dir=os.path.join(os.path.dirname(__file__), '..', 'data'),
+    db_manager=db_manager
 )
 
 # Inicializar gestor de códigos recompensables

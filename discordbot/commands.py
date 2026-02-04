@@ -2052,7 +2052,7 @@ def setup_commands(bot):
         Genera un código único de 10 minutos para vincular con YouTube.
         El usuario debe escribir !vincular <código> en YouTube chat.
         """
-        from backend.usermanager import cache_discord_user, load_user_cache
+        from backend.usermanager import cache_discord_user, load_user_cache, db_manager
         import os
         
         # IMPORTANTE: Cachear el usuario de Discord primero
@@ -2088,7 +2088,7 @@ def setup_commands(bot):
         common_data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
         
         # Crear instancia del AccountLinkingManager
-        linking_manager = AccountLinkingManager(common_data_dir)
+        linking_manager = AccountLinkingManager(common_data_dir, db_manager=db_manager)
         
         # Generar código único
         code = linking_manager.create_pending_link(

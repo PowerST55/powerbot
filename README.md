@@ -6,7 +6,7 @@ Bot de Discord para PowerBot con sistema de puntos, tienda y más.
 
 ### Localmente
 ```bash
-# Clonar repo
+# Clonar repositorio
 git clone https://github.com/TU_USUARIO/powerbot-discord.git
 cd powerbot-discord
 

@@ -2066,7 +2066,7 @@ def setup_commands(bot):
         Genera un código único de 10 minutos para vincular con YouTube.
         El usuario debe escribir !vincular <código> en YouTube chat.
         """
-        from backend.usermanager import cache_discord_user, load_user_cache, db_manager
+        from backend import usermanager
         import os
         
         # IMPORTANTE: Cachear el usuario de Discord primero
@@ -2074,7 +2074,7 @@ def setup_commands(bot):
         if interaction.user.avatar:
             avatar_url = interaction.user.avatar.url
         
-        cache_discord_user(
+        usermanager.cache_discord_user(
             discord_id=interaction.user.id,
             name=interaction.user.name,
             avatar_url=avatar_url
@@ -2082,7 +2082,7 @@ def setup_commands(bot):
         print(f"✓ Usuario Discord cacheado para vinculación: {interaction.user.name} ({interaction.user.id})")
 
         # Si ya está vinculado, avisar y no generar código nuevo
-        user_cache = load_user_cache()
+        user_cache = usermanager.load_user_cache()
         existing = next(
             (u for u in user_cache.get("users", []) if u.get("discord_id") == str(interaction.user.id) and u.get("youtube_id")),
             None
@@ -2098,11 +2098,14 @@ def setup_commands(bot):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
+        if not usermanager.db_manager or not usermanager.db_manager.is_connected:
+            usermanager.init_database()
+        
         # Usar la carpeta 'data/' común (no discordbot/data/)
         common_data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
         
         # Crear instancia del AccountLinkingManager
-        linking_manager = AccountLinkingManager(common_data_dir, db_manager=db_manager)
+        linking_manager = AccountLinkingManager(common_data_dir, db_manager=usermanager.db_manager)
         
         # Generar código único
         code = linking_manager.create_pending_link(
@@ -2110,6 +2113,20 @@ def setup_commands(bot):
             discord_name=interaction.user.name,
             timeout_seconds=600  # 10 minutos
         )
+
+        # Subir a la BD con el mismo formato (si la conexión está disponible)
+        db = usermanager.db_manager
+        link_info = linking_manager.pending_links.get(code)
+        if db and db.is_connected and link_info:
+            created_at = datetime.fromtimestamp(link_info["timestamp"])
+            expires_at = created_at + timedelta(seconds=link_info["timeout"])
+            db.upsert_pending_link(
+                code=code,
+                discord_id=str(link_info["discord_id"]),
+                discord_name=link_info["discord_name"],
+                created_at=created_at,
+                expires_at=expires_at
+            )
         
         embed = discord.Embed(
             title="🔗 Vinculación de Cuentas",

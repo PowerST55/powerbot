@@ -1,23 +1,21 @@
 {
     "users": [
         {
-            "id": 41,
+            "id": 4,
             "youtube_id": null,
-            "discord_id": "767520614050562088",
-            "name": "soydarko",
+            "discord_id": "569614104390664202",
+            "name": "ionmaxiaz",
             "avatar_url": null,
-            "avatar_local": null,
-            "avatar_discord_url": "https://cdn.discordapp.com/avatars/767520614050562088/ef1469656fc67261ad3d4727fa88c56c.png?size=1024",
-            "avatar_discord_local": "avatars/discord_901680662967361568.jpg",
+            "avatar_discord_url": "https://cdn.discordapp.com/avatars/569614104390664202/bb566d0cb3f220b6eba5f91bd7c03b16.png?size=1024",
+            "puntos": 36.0,
+            "last_tx_at": "2026-02-04T23:40:48",
+            "updated_at": "2026-02-04T23:40:55.316098",
+            "created_at": "2026-02-04T14:17:43",
             "isModerator": false,
             "isMember": false,
-            "puntos": 0.0,
             "platform_sources": [
                 "discord"
-            ],
-            "updated_at": "2026-02-04T22:36:25.790538",
-            "last_tx_at": null,
-            "created_at": "2026-02-04T19:36:21"
+            ]
         },
         {
             "id": 1,
@@ -28,7 +26,7 @@
             "avatar_discord_url": "https://cdn.discordapp.com/avatars/901680662967361568/3800f701831d10b05f7134df7aaefa59.png?size=1024",
             "puntos": 0.0,
             "last_tx_at": null,
-            "updated_at": "2026-02-04T14:17:37",
+            "updated_at": "2026-02-04T20:35:16",
             "created_at": "2026-02-04T14:12:53",
             "isModerator": false,
             "isMember": false,
@@ -37,16 +35,16 @@
             ]
         },
         {
-            "id": 16,
+            "id": 34,
             "youtube_id": null,
-            "discord_id": "1407831903548997812",
-            "name": "fanta_alabrabantesa",
+            "discord_id": "1141923464853340221",
+            "name": "jesusadrian2",
             "avatar_url": null,
-            "avatar_discord_url": "https://cdn.discordapp.com/avatars/1407831903548997812/95f22d6bcb967b412b41df509c37a63b.png?size=1024",
+            "avatar_discord_url": "https://cdn.discordapp.com/avatars/1141923464853340221/b91cac982ee094c596e1144b365b8a16.png?size=1024",
             "puntos": 0.0,
             "last_tx_at": null,
-            "updated_at": "2026-02-04T14:33:06",
-            "created_at": "2026-02-04T14:33:05",
+            "updated_at": "2026-02-04T20:23:33",
+            "created_at": "2026-02-04T15:57:08",
             "isModerator": false,
             "isMember": false,
             "platform_sources": [
@@ -71,15 +69,32 @@
             ]
         },
         {
+            "id": 16,
+            "youtube_id": null,
+            "discord_id": "1407831903548997812",
+            "name": "fanta_alabrabantesa",
+            "avatar_url": null,
+            "avatar_discord_url": "https://cdn.discordapp.com/avatars/1407831903548997812/95f22d6bcb967b412b41df509c37a63b.png?size=1024",
+            "puntos": 0.0,
+            "last_tx_at": null,
+            "updated_at": "2026-02-04T14:33:06",
+            "created_at": "2026-02-04T14:33:05",
+            "isModerator": false,
+            "isMember": false,
+            "platform_sources": [
+                "discord"
+            ]
+        },
+        {
             "id": 19,
             "youtube_id": null,
             "discord_id": "1342632235379068959",
             "name": "camiills",
             "avatar_url": null,
             "avatar_discord_url": "https://cdn.discordapp.com/avatars/1342632235379068959/ec79a87a91dda0cdc14e33d141f638c6.png?size=1024",
-            "puntos": 0.0,
-            "last_tx_at": null,
-            "updated_at": "2026-02-04T14:33:17",
+            "puntos": 99.0,
+            "last_tx_at": "2026-02-04T23:40:17",
+            "updated_at": "2026-02-04T20:40:16",
             "created_at": "2026-02-04T14:33:16",
             "isModerator": false,
             "isMember": false,
@@ -96,7 +111,7 @@
             "avatar_discord_url": "https://cdn.discordapp.com/avatars/767520614050562088/ef1469656fc67261ad3d4727fa88c56c.png?size=1024",
             "puntos": 0.0,
             "last_tx_at": null,
-            "updated_at": "2026-02-04T19:36:22",
+            "updated_at": "2026-02-04T19:36:24",
             "created_at": "2026-02-04T19:36:21",
             "isModerator": false,
             "isMember": false,
@@ -105,14 +120,15 @@
             ]
         }
     ],
+    "yt_to_id": {},
     "discord_to_id": {
         "569614104390664202": 4,
         "901680662967361568": 1,
-        "1407831903548997812": 16,
+        "1141923464853340221": 34,
         "1160608747278839868": 13,
+        "1407831903548997812": 16,
         "1342632235379068959": 19,
         "767520614050562088": 41
     },
-    "yt_to_id": {},
     "next_id": 42
 }

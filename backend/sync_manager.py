@@ -1,5 +1,6 @@
 import json
 import logging
+from contextlib import nullcontext
 from datetime import datetime
 from typing import Dict, Optional, List, Any, TYPE_CHECKING
 
@@ -26,7 +27,7 @@ class SyncManager:
     - Manejo de conflictos por últimas escrituras
     """
     
-    def __init__(self, db_manager: DatabaseManager, cache_save_func, cache_load_func):
+    def __init__(self, db_manager: DatabaseManager, cache_save_func, cache_load_func, cache_lock=None):
         """
         Args:
             db_manager: Instancia de DatabaseManager
@@ -37,6 +38,7 @@ class SyncManager:
         self.save_cache = cache_save_func
         self.load_cache = cache_load_func
         self.last_full_sync = None
+        self.cache_lock = cache_lock
     
     def sync_user_bidirectional(self, user_dict: Dict, source: str = 'local') -> Dict:
         """Sincroniza un usuario en ambos sistemas de forma bidireccional
@@ -177,30 +179,48 @@ class SyncManager:
             bool: True si se guardó en ambos, False si solo en caché
         """
         # Siempre guardar en JSON (respaldo principal)
-        user_cache = self.load_cache()
-        users = user_cache.get('users', [])
+        lock_ctx = self.cache_lock if self.cache_lock else nullcontext()
+        with lock_ctx:
+            user_cache = self.load_cache()
+            users = user_cache.get('users', [])
         
         # Normalizar timestamps para JSON
-        if 'last_tx_at' in user_dict:
-            user_dict['last_tx_at'] = self._normalize_timestamp_str(user_dict.get('last_tx_at'))
+            if 'last_tx_at' in user_dict:
+                user_dict['last_tx_at'] = self._normalize_timestamp_str(user_dict.get('last_tx_at'))
+
+            # Normalizar IDs a string para comparar correctamente
+            if user_dict.get('discord_id') is not None:
+                user_dict['discord_id'] = str(user_dict.get('discord_id'))
+            if user_dict.get('youtube_id') is not None:
+                user_dict['youtube_id'] = str(user_dict.get('youtube_id'))
 
         # Buscar y actualizar o agregar
-        found = False
-        for u in users:
-            if u.get('youtube_id') == user_dict.get('youtube_id') or \
-               (u.get('discord_id') == user_dict.get('discord_id') and user_dict.get('discord_id')):
-                # Actualizar timestamp de cambio local
+            found = False
+            for u in users:
+                # Comparar por ID universal si existe
+                if user_dict.get('id') is not None and u.get('id') == user_dict.get('id'):
+                    user_dict['updated_at'] = datetime.now().isoformat()
+                    u.update(user_dict)
+                    found = True
+                    break
+                # Comparar por discord_id/youtube_id normalizados
+                if user_dict.get('youtube_id') is not None and str(u.get('youtube_id')) == user_dict.get('youtube_id'):
+                    user_dict['updated_at'] = datetime.now().isoformat()
+                    u.update(user_dict)
+                    found = True
+                    break
+                if user_dict.get('discord_id') is not None and str(u.get('discord_id')) == user_dict.get('discord_id'):
+                    user_dict['updated_at'] = datetime.now().isoformat()
+                    u.update(user_dict)
+                    found = True
+                    break
+            
+            if not found:
                 user_dict['updated_at'] = datetime.now().isoformat()
-                u.update(user_dict)
-                found = True
-                break
-        
-        if not found:
-            user_dict['updated_at'] = datetime.now().isoformat()
-            users.append(user_dict)
-        
-        user_cache['users'] = users
-        self.save_cache(user_cache)
+                users.append(user_dict)
+            
+            user_cache['users'] = users
+            self.save_cache(user_cache)
         
         # Intentar guardar en BD
         synced_to_db = False

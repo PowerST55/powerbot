@@ -46,6 +46,7 @@ CUSTOM_FILE = os.path.join(BASE_DATA_DIR, "custom_users.json")
 db_manager = None
 sync_manager = None
 CACHE_LOCK = threading.RLock()
+_LAST_CACHE_COUNT = None
 
 def init_database():
     """Inicializa el gestor de BD y sincronización
@@ -62,7 +63,7 @@ def init_database():
     try:
         logger.info("🔄 Inicializando sincronización con BD CENTRAL (PC)...")
         db_manager = DatabaseManager()
-        sync_manager = SyncManager(db_manager, save_user_cache, load_user_cache)
+        sync_manager = SyncManager(db_manager, save_user_cache, load_user_cache, CACHE_LOCK)
         _sync_next_id_with_db()
         logger.info("✓ Sincronización con BD central iniciada (Discord Bot ↔ PC)")
         return True
@@ -302,10 +303,10 @@ def _repair_user_cache(user_cache: dict) -> dict:
         if not isinstance(u, dict):
             continue
         key = None
-        if u.get("discord_id"):
-            key = f"discord:{u.get('discord_id')}"
-        elif u.get("youtube_id"):
-            key = f"youtube:{u.get('youtube_id')}"
+        if u.get("discord_id") is not None:
+            key = f"discord:{str(u.get('discord_id'))}"
+        elif u.get("youtube_id") is not None:
+            key = f"youtube:{str(u.get('youtube_id'))}"
         elif u.get("id") is not None:
             key = f"id:{u.get('id')}"
 
@@ -339,9 +340,9 @@ def _repair_user_cache(user_cache: dict) -> dict:
         uid = u.get("id")
         if isinstance(uid, int) and uid > max_id:
             max_id = uid
-        if u.get("discord_id"):
+        if u.get("discord_id") is not None:
             discord_to_id[str(u.get("discord_id"))] = uid
-        if u.get("youtube_id"):
+        if u.get("youtube_id") is not None:
             yt_to_id[str(u.get("youtube_id"))] = uid
 
     user_cache["discord_to_id"] = discord_to_id
@@ -359,6 +360,7 @@ def save_user_cache(user_cache):
     - Detecta y reporta cualquier duplicado encontrado
     - Previene escritura si hay duplicados críticos
     """
+    global _LAST_CACHE_COUNT
     with CACHE_LOCK:
         # ✅ Reparar duplicados antes de guardar
         if isinstance(user_cache, dict) and "users" in user_cache:
@@ -399,7 +401,12 @@ def save_user_cache(user_cache):
             with open(tmp_path, 'w', encoding='utf-8') as f:
                 json.dump(user_cache, f, indent=4, ensure_ascii=False)
             os.replace(tmp_path, CACHE_FILE)
-            logger.info(f"✓ Cache guardado exitosamente: {len(user_cache.get('users', []))} usuarios")
+            current_count = len(user_cache.get('users', []))
+            if _LAST_CACHE_COUNT != current_count:
+                logger.info(f"✓ Cache guardado exitosamente: {current_count} usuarios")
+                _LAST_CACHE_COUNT = current_count
+            else:
+                logger.debug(f"Cache guardado sin cambios: {current_count} usuarios")
         except Exception as e:
             logger.error(f"🔴 ERROR CRÍTICO al guardar {CACHE_FILE}: {e}")
             raise
@@ -415,6 +422,7 @@ def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=
     - Usa BD como fuente de verdad para IDs
     """
     with CACHE_LOCK:
+        dirty = False
         user_cache = load_user_cache()
         users = user_cache.get("users", [])
         yt_to_id = user_cache.get("yt_to_id", {})
@@ -502,20 +510,30 @@ def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=
             else:
                 # No encontró duplicado, agregar el nuevo
                 users.append(user)
+                dirty = True
                 if youtube_id_str:
                     yt_to_id[youtube_id_str] = user["id"]
                 user_cache["next_id"] = max(user_cache.get("next_id", 1), (user["id"] or 0) + 1)
                 logger.info(f"✓ Usuario YouTube agregado: {name} (ID: {user['id']})")
         else:
             # ✅ ACTUALIZAR usuario existente
-            user["name"] = name
-            user["avatar_url"] = avatar_url
-            user["isModerator"] = bool(is_moderator)
-            user["isMember"] = bool(is_member)
+            if user.get("name") != name:
+                user["name"] = name
+                dirty = True
+            if user.get("avatar_url") != avatar_url:
+                user["avatar_url"] = avatar_url
+                dirty = True
+            if user.get("isModerator") != bool(is_moderator):
+                user["isModerator"] = bool(is_moderator)
+                dirty = True
+            if user.get("isMember") != bool(is_member):
+                user["isMember"] = bool(is_member)
+                dirty = True
             if "platform_sources" not in user:
                 user["platform_sources"] = []
             if "youtube" not in user["platform_sources"]:
                 user["platform_sources"].append("youtube")
+                dirty = True
 
         # Descargar avatar
         if avatar_url:
@@ -535,7 +553,7 @@ def cache_user_info(youtube_id, name, avatar_url, is_moderator=False, is_member=
         if "discord_to_id" not in user_cache:
             user_cache["discord_to_id"] = {}
         
-        if not skip_save:
+        if dirty and not skip_save:
             save_user_cache(user_cache)
         
         return user_cache
@@ -556,6 +574,7 @@ def cache_discord_user(discord_id, name, avatar_url=None):
         avatar_url: URL del avatar de Discord (opcional)
     """
     with CACHE_LOCK:
+        dirty = False
         user_cache = load_user_cache()
         users = user_cache.get("users", [])
         discord_to_id = user_cache.get("discord_to_id", {})
@@ -643,6 +662,7 @@ def cache_discord_user(discord_id, name, avatar_url=None):
             else:
                 # No encontró duplicado, agregar el nuevo
                 users.append(user)
+                dirty = True
                 discord_to_id[discord_id_str] = user["id"]
                 user_cache["next_id"] = max(user_cache.get("next_id", 1), (user["id"] or 0) + 1)
                 logger.info(f"✓ Usuario Discord agregado: {name} (ID: {user['id']})")
@@ -650,13 +670,16 @@ def cache_discord_user(discord_id, name, avatar_url=None):
             # ✅ ACTUALIZAR usuario existente (no crear duplicado)
             if user["name"] != name:
                 user["name"] = name
+                dirty = True
             if avatar_url and user.get("avatar_discord_url") != avatar_url:
                 user["avatar_discord_url"] = avatar_url
+                dirty = True
             if "platform_sources" not in user:
                 user["platform_sources"] = []
             if "discord" not in user["platform_sources"]:
                 user["platform_sources"].append("discord")
                 logger.info(f"✓ Plataforma Discord agregada a usuario: {name}")
+                dirty = True
         
         # Descargar avatar de Discord si es necesario
         if avatar_url:
@@ -676,7 +699,8 @@ def cache_discord_user(discord_id, name, avatar_url=None):
         user_cache["users"] = users
         user_cache["yt_to_id"] = yt_to_id
         user_cache["discord_to_id"] = discord_to_id
-        save_user_cache(user_cache)
+        if dirty:
+            save_user_cache(user_cache)
         
         # Sincronizar a BD si está disponible
         if sync_manager:
@@ -1012,12 +1036,12 @@ def _upsert_user_from_db(db_user: dict):
                     break
         if not target and discord_id_str:
             for u in users:
-                if u.get("discord_id") == discord_id_str:
+                if str(u.get("discord_id")) == discord_id_str:
                     target = u
                     break
         if not target and youtube_id_str:
             for u in users:
-                if u.get("youtube_id") == youtube_id_str:
+                if str(u.get("youtube_id")) == youtube_id_str:
                     target = u
                     break
 

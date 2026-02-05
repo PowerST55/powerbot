@@ -1,1 +1,8 @@
-{}
+{
+    "channels": [
+        "1029761977477763184"
+    ],
+    "interval": 60,
+    "points_per_interval": 10.0,
+    "enabled": true
+}

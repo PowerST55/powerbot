@@ -1129,47 +1129,67 @@ def link_accounts(discord_id, youtube_id) -> dict:
             youtube_user = user
             print(f"   ✓ Usuario YouTube encontrado: {user.get('name')} (ID universal: {user.get('id')})")
     
-    # Si no existen ambos, no se puede vincular
+    # Validar si encontramos el usuario de YouTube (requerido)
     if not discord_user:
-        print(f"   ❌ Usuario de Discord NO encontrado con discord_id={discord_id_str}")
+        print(f"   ⚠ Usuario de Discord NO encontrado con discord_id={discord_id_str}")
         print(f"   📋 Usuarios en cache: {len(users)}")
         for u in users[:5]:  # Mostrar primeros 5 para debug
             print(f"      - {u.get('name')}: discord_id={u.get('discord_id')}, youtube_id={u.get('youtube_id')}")
+    
     if not youtube_user:
         print(f"   ❌ Usuario de YouTube NO encontrado con youtube_id={youtube_id_str}")
-    
-    if not discord_user or not youtube_user:
-        print(f"⚠ Error: No se encontraron ambos usuarios para vincular")
+        print("⚠ Error: No se encontró el usuario de YouTube para vincular")
         return None
     
-    # Si ya están vinculados (mismo ID universal), retornar
-    if discord_user.get("id") == youtube_user.get("id"):
+    # CASO 1: Ambos usuarios existen como entidades separadas -> fusionar
+    if discord_user and youtube_user and discord_user.get("id") != youtube_user.get("id"):
+        print(f"💡 Fusionando dos usuarios separados")
+        
+        # Sumar puntos: YouTube suma los de Discord
+        puntos_discord = discord_user.get("puntos", 0)
+        puntos_youtube = youtube_user.get("puntos", 0)
+        youtube_user["puntos"] = puntos_youtube + puntos_discord
+        
+        print(f"💰 Sumando puntos: Discord({discord_user.get('name')})={puntos_discord:.1f} + YouTube({youtube_user.get('name')})={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
+        
+        # Vincular información de Discord a YouTube user
+        youtube_user["discord_id"] = discord_id_str
+        youtube_user["avatar_discord_url"] = discord_user.get("avatar_discord_url")
+        youtube_user["avatar_discord_local"] = discord_user.get("avatar_discord_local")
+        
+        # Agregar Discord a las plataformas
+        if "platform_sources" not in youtube_user:
+            youtube_user["platform_sources"] = []
+        if "discord" not in youtube_user["platform_sources"]:
+            youtube_user["platform_sources"].append("discord")
+        
+        # Eliminar el usuario de Discord (fusionarlo en YouTube)
+        users.remove(discord_user)
+        user_cache["users"] = users
+    
+    # CASO 2: Solo existe usuario de YouTube -> agregar discord_id directamente
+    elif not discord_user and youtube_user:
+        print(f"💡 Usuario de YouTube existe, agregando discord_id directamente")
+        
+        # Verificar que no esté ya vinculado
+        if youtube_user.get("discord_id"):
+            print(f"⚠ Usuario de YouTube ya tiene discord_id: {youtube_user.get('discord_id')}")
+            return None
+        
+        # Agregar discord_id al usuario existente
+        youtube_user["discord_id"] = discord_id_str
+        
+        if "platform_sources" not in youtube_user:
+            youtube_user["platform_sources"] = []
+        if "discord" not in youtube_user["platform_sources"]:
+            youtube_user["platform_sources"].append("discord")
+        
+        print(f"💰 Puntos actuales en YouTube: {youtube_user.get('puntos', 0):.1f}₱")
+    
+    # CASO 3: Ambos son el mismo usuario -> ya está vinculado
+    elif discord_user and youtube_user and discord_user.get("id") == youtube_user.get("id"):
         print(f"⚠ Las cuentas ya están vinculadas (mismo ID universal: {discord_user.get('id')})")
         return discord_user
-    
-    # Sumar puntos: YouTube suma los de Discord
-    puntos_discord = discord_user.get("puntos", 0)
-    puntos_youtube = youtube_user.get("puntos", 0)
-    youtube_user["puntos"] = puntos_youtube + puntos_discord
-    
-    print(f"💰 Sumando puntos: Discord({discord_user.get('name')})={puntos_discord:.1f} + YouTube({youtube_user.get('name')})={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
-    
-    # Vincular información de Discord a YouTube user
-    youtube_user["discord_id"] = discord_id_str
-    youtube_user["avatar_discord_url"] = discord_user.get("avatar_discord_url")
-    youtube_user["avatar_discord_local"] = discord_user.get("avatar_discord_local")
-    
-    # Agregar Discord a las plataformas
-    if "platform_sources" not in youtube_user:
-        youtube_user["platform_sources"] = []
-    if "discord" not in youtube_user["platform_sources"]:
-        youtube_user["platform_sources"].append("discord")
-    
-    # Eliminar el usuario de Discord (fusionarlo en YouTube)
-    users.remove(discord_user)
-    
-    # Actualizar caché
-    user_cache["users"] = users
     
     # Actualizar mapeos: discord_id ahora apunta al usuario unificado (YouTube)
     discord_to_id = user_cache.get("discord_to_id", {})
@@ -1182,7 +1202,7 @@ def link_accounts(discord_id, youtube_id) -> dict:
     
     save_user_cache(user_cache)
     
-    print(f"✓ Cuentas vinculadas exitosamente: {discord_user.get('name')} (Discord) con {youtube_user.get('name')} (YouTube)")
+    print(f"✓ Cuentas vinculadas exitosamente: Discord ({discord_id_str}) con {youtube_user.get('name')} (YouTube)")
     return youtube_user
 
 

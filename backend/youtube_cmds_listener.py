@@ -1,8 +1,8 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
-from usermanager import load_banned_users , load_user_cache, load_custom_users, add_points_to_user, get_user_points, find_user_by_query, link_accounts, unlink_account, db_manager
+from usermanager import load_banned_users , load_user_cache, load_custom_users, add_points_to_user, get_user_points, find_user_by_query, link_accounts, unlink_account, db_manager, init_database
 from activities.poll import iniciar_encuesta, resetpoll
 from activities.text2voice import TextToVoice
 from backend.transaction_logger import TransactionLogger
@@ -366,8 +366,30 @@ async def youtube_listener(
                         try:
                             code = mensaje.replace("!vincular ", "").strip().upper()
                             
-                            # Validar el código
-                            pending_link = account_linking_manager.get_pending_link(code)
+                            # Validar el código - Primero BD, luego fallback local
+                            pending_link = None
+                            
+                            # Ensegurar DB inicializada
+                            if not db_manager or not db_manager.is_connected:
+                                init_database()
+                            
+                            # Intentar obtener de BD primero
+                            if db_manager and db_manager.is_connected:
+                                pending_link = db_manager.get_pending_link(code)
+                                if pending_link:
+                                    # Validar que no haya expirado usando expires_at de BD
+                                    expires_at = pending_link.get('expires_at')
+                                    if expires_at:
+                                        if isinstance(expires_at, str):
+                                            expires_at = datetime.fromisoformat(expires_at)
+                                        if datetime.now() > expires_at:
+                                            # Código expirado
+                                            print(f"⚠ Código {code} expirado en BD")
+                                            pending_link = None
+                            
+                            # Si no está en BD, intentar fallback local
+                            if not pending_link:
+                                pending_link = account_linking_manager.get_pending_link(code)
                             
                             if pending_link:
                                 discord_id = pending_link['discord_id']
@@ -404,8 +426,13 @@ async def youtube_listener(
                                 result = link_accounts(discord_id, canal_id)
                                 
                                 if result:
-                                    # Eliminar el código usado
+                                    # Eliminar el código usado - de BD y de JSON local
+                                    if db_manager and db_manager.is_connected:
+                                        db_manager.delete_pending_link(code)
+                                        print(f"✓ Código {code} eliminado de BD")
+                                    
                                     account_linking_manager.remove_pending_link(code)
+                                    print(f"✓ Código {code} eliminado de JSON local")
                                     
                                     # Notificar éxito
                                     total_pews = result.get('puntos', 0)

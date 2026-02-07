@@ -1096,92 +1096,108 @@ def _upsert_user_from_db(db_user: dict):
 
 
 def link_accounts(discord_id, youtube_id) -> dict:
-    """Vincula una cuenta de Discord con una de YouTube
-    
-    Args:
-        discord_id: ID de Discord (int o str)
-        youtube_id: ID de YouTube (canal ID, str)
-        
-    Returns:
-        dict: Usuario unificado o None si hubo error
-    """
+    """Vincula una cuenta de Discord con una de YouTube.
+    IMPORTANTE: Sincroniza TANTO el cache como la BD"""
     user_cache = load_user_cache()
     users = user_cache.get("users", [])
-    
+
     discord_id_str = str(discord_id)
     youtube_id_str = str(youtube_id)
-    
-    print(f"🔍 Buscando usuarios para vincular:")
+
+    print("🔍 Buscando usuarios para vincular:")
     print(f"   Discord ID: {discord_id_str}")
     print(f"   YouTube ID: {youtube_id_str}")
-    
-    # Buscar usuarios
+
     discord_user = None
     youtube_user = None
-    
+
+    # Buscar en cache
     for user in users:
-        # Buscar usuario de Discord (por discord_id)
         if user.get("discord_id") == discord_id_str:
             discord_user = user
-            print(f"   ✓ Usuario Discord encontrado: {user.get('name')} (ID universal: {user.get('id')})")
-        # Buscar usuario de YouTube (por youtube_id)
+            print(f"   ✓ Usuario Discord encontrado en cache: {user.get('name')} (ID: {user.get('id')})")
         if user.get("youtube_id") == youtube_id_str:
             youtube_user = user
-            print(f"   ✓ Usuario YouTube encontrado: {user.get('name')} (ID universal: {user.get('id')})")
-    
-    # Validar si encontramos el usuario de YouTube (requerido)
-    if not discord_user:
-        print(f"   ⚠ Usuario de Discord NO encontrado con discord_id={discord_id_str}")
-        print(f"   📋 Usuarios en cache: {len(users)}")
-        for u in users[:5]:  # Mostrar primeros 5 para debug
-            print(f"      - {u.get('name')}: discord_id={u.get('discord_id')}, youtube_id={u.get('youtube_id')}")
-    
+            print(f"   ✓ Usuario YouTube encontrado en cache: {user.get('name')} (ID: {user.get('id')})")
+
+    # Si no está en cache, buscar en BD
+    if not youtube_user and db_manager and db_manager.is_connected:
+        try:
+            db_youtube_user = db_manager.get_user_by_youtube_id(youtube_id_str)
+            if db_youtube_user:
+                print(f"   ✓ Usuario YouTube encontrado en BD: {db_youtube_user.get('name')} (ID: {db_youtube_user.get('id')})")
+                # Cargar desde BD al cache
+                _upsert_user_from_db(db_youtube_user)
+                user_cache = load_user_cache()
+                users = user_cache.get("users", [])
+                for user in users:
+                    if user.get("youtube_id") == youtube_id_str:
+                        youtube_user = user
+                        break
+        except Exception as e:
+            print(f"⚠ Error buscando en BD: {e}")
+
     if not youtube_user:
-        print(f"   ❌ Usuario de YouTube NO encontrado con youtube_id={youtube_id_str}")
-        print("⚠ Error: No se encontró el usuario de YouTube para vincular")
+        print(f"❌ Usuario de YouTube NO encontrado con youtube_id={youtube_id_str}")
         return None
-    
+
+    if not discord_user:
+        print(f"⚠ Usuario de Discord NO encontrado con discord_id={discord_id_str}")
+
     # CASO 1: Ambos usuarios existen como entidades separadas -> fusionar
     if discord_user and youtube_user and discord_user.get("id") != youtube_user.get("id"):
-        print(f"💡 Fusionando dos usuarios separados")
+        print(f"💡 CASO 1: Fusionando dos usuarios separados")
         
-        # Sumar puntos: YouTube suma los de Discord
         puntos_discord = discord_user.get("puntos", 0)
         puntos_youtube = youtube_user.get("puntos", 0)
         youtube_user["puntos"] = puntos_youtube + puntos_discord
-        
+
         print(f"💰 Sumando puntos: Discord({discord_user.get('name')})={puntos_discord:.1f} + YouTube({youtube_user.get('name')})={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
-        
-        # Vincular información de Discord a YouTube user
+
         youtube_user["discord_id"] = discord_id_str
         youtube_user["avatar_discord_url"] = discord_user.get("avatar_discord_url")
         youtube_user["avatar_discord_local"] = discord_user.get("avatar_discord_local")
-        
-        # Agregar Discord a las plataformas
+
         if "platform_sources" not in youtube_user:
             youtube_user["platform_sources"] = []
         if "discord" not in youtube_user["platform_sources"]:
             youtube_user["platform_sources"].append("discord")
-        
-        # Eliminar el usuario de Discord (fusionarlo en YouTube)
+
         users.remove(discord_user)
         user_cache["users"] = users
-    
-    # CASO 2: Solo existe usuario de YouTube -> buscar usuario solo de Discord
+
+        # ACTUALIZAR EN BD: Fusionar usuarios
+        if db_manager and db_manager.is_connected:
+            try:
+                db_manager.upsert_user_minimal(
+                    youtube_id=youtube_id_str,
+                    discord_id=discord_id_str,
+                    name=youtube_user.get("name"),
+                    avatar_url=youtube_user.get("avatar_url"),
+                    avatar_discord_url=youtube_user.get("avatar_discord_url"),
+                    is_moderator=youtube_user.get("isModerator", False),
+                    is_member=youtube_user.get("isMember", False),
+                    platform_sources=youtube_user.get("platform_sources", ["youtube", "discord"])
+                )
+                print(f"   ✓ Fusión sincronizada en BD")
+            except Exception as e:
+                print(f"   ⚠ Error actualizando BD: {e}")
+
+    # CASO 2: Solo existe usuario de YouTube -> agregar discord_id
     elif not discord_user and youtube_user:
-        print(f"💡 Usuario de YouTube existe, buscando usuario solo de Discord...")
+        print(f"💡 CASO 2: Usuario de YouTube existe, verificando vinculación...")
         
         # Verificar que el usuario de YouTube no esté ya vinculado
         if youtube_user.get("discord_id"):
             print(f"⚠ Usuario de YouTube ya tiene discord_id: {youtube_user.get('discord_id')}")
             return None
         
-        # Buscar si existe un usuario solo con discord_id (sin youtube_id)
+        # Buscar si existe un usuario solo con discord_id (sin youtube_id) en cache
         discord_only_user = None
         for user in users:
             if user.get("discord_id") == discord_id_str and not user.get("youtube_id"):
                 discord_only_user = user
-                print(f"   ✓ Usuario solo de Discord encontrado: {user.get('name')} (ID universal: {user.get('id')})")
+                print(f"   ✓ Usuario solo de Discord encontrado en cache: {user.get('name')} (ID: {user.get('id')})")
                 break
         
         # Si existe usuario solo de Discord, fusionar sus puntos
@@ -1190,45 +1206,71 @@ def link_accounts(discord_id, youtube_id) -> dict:
             puntos_youtube = youtube_user.get("puntos", 0)
             youtube_user["puntos"] = puntos_youtube + puntos_discord
             
-            print(f"💰 Sumando puntos: Discord({discord_only_user.get('name')})={puntos_discord:.1f} + YouTube({youtube_user.get('name')})={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
+            print(f"💰 Sumando puntos: Discord={puntos_discord:.1f} + YouTube={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
             
-            # Copiar información de Discord
             youtube_user["avatar_discord_url"] = discord_only_user.get("avatar_discord_url")
             youtube_user["avatar_discord_local"] = discord_only_user.get("avatar_discord_local")
             
-            # Eliminar el usuario solo de Discord
             users.remove(discord_only_user)
             user_cache["users"] = users
             print(f"   🗑 Usuario solo de Discord eliminado del cache")
         else:
-            print(f"   ℹ No hay usuario solo de Discord, continuando...")
-            print(f"💰 Puntos actuales en YouTube: {youtube_user.get('puntos', 0):.1f}₱")
+            print(f"   ℹ No hay usuario solo de Discord en cache")
+            # Verificar en BD si existe usuario sin youtube_id
+            if db_manager and db_manager.is_connected:
+                try:
+                    db_discord_user = db_manager.get_user_by_discord_id(discord_id_str)
+                    if db_discord_user and not db_discord_user.get('youtube_id'):
+                        print(f"   ✓ Usuario solo de Discord encontrado en BD: {db_discord_user.get('name')} (ID: {db_discord_user.get('id')})")
+                        puntos_discord = db_discord_user.get("puntos", 0)
+                        puntos_youtube = youtube_user.get("puntos", 0)
+                        youtube_user["puntos"] = puntos_youtube + puntos_discord
+                        print(f"💰 Sumando puntos desde BD: Discord={puntos_discord:.1f} + YouTube={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
+                except Exception as e:
+                    print(f"   ⚠ Error buscando en BD: {e}")
         
-        # Agregar discord_id al usuario de YouTube
+        print(f"💡 Agregando discord_id al usuario de YouTube")
         youtube_user["discord_id"] = discord_id_str
         
         if "platform_sources" not in youtube_user:
             youtube_user["platform_sources"] = []
         if "discord" not in youtube_user["platform_sources"]:
             youtube_user["platform_sources"].append("discord")
-    
+
+        # ACTUALIZAR EN BD: Vincular facebook_id a usuario de YouTube
+        if db_manager and db_manager.is_connected:
+            try:
+                db_manager.upsert_user_minimal(
+                    youtube_id=youtube_id_str,
+                    discord_id=discord_id_str,
+                    name=youtube_user.get("name"),
+                    avatar_url=youtube_user.get("avatar_url"),
+                    avatar_discord_url=youtube_user.get("avatar_discord_url"),
+                    is_moderator=youtube_user.get("isModerator", False),
+                    is_member=youtube_user.get("isMember", False),
+                    platform_sources=youtube_user.get("platform_sources", ["youtube", "discord"])
+                )
+                print(f"   ✓ Vinculación sincronizada en BD")
+            except Exception as e:
+                print(f"   ⚠ Error actualizando BD: {e}")
+
     # CASO 3: Ambos son el mismo usuario -> ya está vinculado
     elif discord_user and youtube_user and discord_user.get("id") == youtube_user.get("id"):
-        print(f"⚠ Las cuentas ya están vinculadas (mismo ID universal: {discord_user.get('id')})")
+        print(f"⚠ Las cuentas ya estan vinculadas (ID universal: {discord_user.get('id')})")
         return discord_user
-    
-    # Actualizar mapeos: discord_id ahora apunta al usuario unificado (YouTube)
+
+    # Actualizar mapeos en cache
     discord_to_id = user_cache.get("discord_to_id", {})
     discord_to_id[discord_id_str] = youtube_user.get("id")
     user_cache["discord_to_id"] = discord_to_id
-    
+
     yt_to_id = user_cache.get("yt_to_id", {})
     yt_to_id[youtube_id_str] = youtube_user.get("id")
     user_cache["yt_to_id"] = yt_to_id
-    
+
     save_user_cache(user_cache)
-    
-    print(f"✓ Cuentas vinculadas exitosamente: Discord ({discord_id_str}) con {youtube_user.get('name')} (YouTube)")
+
+    print(f"✓ Cuentas vinculadas exitosamente: Discord ({discord_id_str}) + YouTube ({youtube_user.get('name')})")
     return youtube_user
 
 

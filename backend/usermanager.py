@@ -1179,20 +1179,19 @@ def link_accounts(discord_id, youtube_id) -> dict:
                     is_member=youtube_user.get("isMember", False),
                     platform_sources=youtube_user.get("platform_sources", ["youtube", "discord"])
                 )
-                print(f"   ✓ Fusión sincronizada en BD")
+                
+                # AHORA actualizar los puntos directamente en la BD
+                cursor = db_manager.connection.cursor()
+                cursor.execute(
+                    "UPDATE users SET puntos = %s, updated_at = NOW() WHERE youtube_id = %s",
+                    (youtube_user.get("puntos", 0), youtube_id_str)
+                )
+                db_manager.connection.commit()
+                cursor.close()
+                print(f"   ✓ Fusión y puntos ({youtube_user.get('puntos', 0):.1f}₱) sincronizados en BD")
             except Exception as e:
-                print(f"   ⚠ Error actualizando BD: {e}")
-
-    # CASO 2: Solo existe usuario de YouTube -> agregar discord_id
-    elif not discord_user and youtube_user:
-        print(f"💡 CASO 2: Usuario de YouTube existe, verificando vinculación...")
+                print(f"   ⚠ Error sincronizando fusión en BD: {e}")
         
-        # Verificar que el usuario de YouTube no esté ya vinculado
-        if youtube_user.get("discord_id"):
-            print(f"⚠ Usuario de YouTube ya tiene discord_id: {youtube_user.get('discord_id')}")
-            return None
-        
-        # Buscar si existe un usuario solo con discord_id (sin youtube_id) en cache
         discord_only_user = None
         for user in users:
             if user.get("discord_id") == discord_id_str and not user.get("youtube_id"):
@@ -1250,7 +1249,16 @@ def link_accounts(discord_id, youtube_id) -> dict:
                     is_member=youtube_user.get("isMember", False),
                     platform_sources=youtube_user.get("platform_sources", ["youtube", "discord"])
                 )
-                print(f"   ✓ Vinculación sincronizada en BD")
+                
+                # AHORA actualizar los puntos directamente en la BD
+                cursor = db_manager.connection.cursor()
+                cursor.execute(
+                    "UPDATE users SET puntos = %s, updated_at = NOW() WHERE youtube_id = %s",
+                    (youtube_user.get("puntos", 0), youtube_id_str)
+                )
+                db_manager.connection.commit()
+                cursor.close()
+                print(f"   ✓ Vinculación y puntos ({youtube_user.get('puntos', 0):.1f}₱) sincronizados en BD")
             except Exception as e:
                 print(f"   ⚠ Error actualizando BD: {e}")
 

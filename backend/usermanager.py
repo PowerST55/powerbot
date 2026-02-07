@@ -1221,8 +1221,8 @@ def link_accounts(discord_id, youtube_id) -> dict:
                     db_discord_user = db_manager.get_user_by_discord_id(discord_id_str)
                     if db_discord_user and not db_discord_user.get('youtube_id'):
                         print(f"   ✓ Usuario solo de Discord encontrado en BD: {db_discord_user.get('name')} (ID: {db_discord_user.get('id')})")
-                        puntos_discord = db_discord_user.get("puntos", 0)
-                        puntos_youtube = youtube_user.get("puntos", 0)
+                        puntos_discord = float(db_discord_user.get("puntos", 0))
+                        puntos_youtube = float(youtube_user.get("puntos", 0))
                         youtube_user["puntos"] = puntos_youtube + puntos_discord
                         print(f"💰 Sumando puntos desde BD: Discord={puntos_discord:.1f} + YouTube={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
                 except Exception as e:

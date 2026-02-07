@@ -1167,24 +1167,50 @@ def link_accounts(discord_id, youtube_id) -> dict:
         users.remove(discord_user)
         user_cache["users"] = users
     
-    # CASO 2: Solo existe usuario de YouTube -> agregar discord_id directamente
+    # CASO 2: Solo existe usuario de YouTube -> buscar usuario solo de Discord
     elif not discord_user and youtube_user:
-        print(f"💡 Usuario de YouTube existe, agregando discord_id directamente")
+        print(f"💡 Usuario de YouTube existe, buscando usuario solo de Discord...")
         
-        # Verificar que no esté ya vinculado
+        # Verificar que el usuario de YouTube no esté ya vinculado
         if youtube_user.get("discord_id"):
             print(f"⚠ Usuario de YouTube ya tiene discord_id: {youtube_user.get('discord_id')}")
             return None
         
-        # Agregar discord_id al usuario existente
+        # Buscar si existe un usuario solo con discord_id (sin youtube_id)
+        discord_only_user = None
+        for user in users:
+            if user.get("discord_id") == discord_id_str and not user.get("youtube_id"):
+                discord_only_user = user
+                print(f"   ✓ Usuario solo de Discord encontrado: {user.get('name')} (ID universal: {user.get('id')})")
+                break
+        
+        # Si existe usuario solo de Discord, fusionar sus puntos
+        if discord_only_user:
+            puntos_discord = discord_only_user.get("puntos", 0)
+            puntos_youtube = youtube_user.get("puntos", 0)
+            youtube_user["puntos"] = puntos_youtube + puntos_discord
+            
+            print(f"💰 Sumando puntos: Discord({discord_only_user.get('name')})={puntos_discord:.1f} + YouTube({youtube_user.get('name')})={puntos_youtube:.1f} = {youtube_user['puntos']:.1f}")
+            
+            # Copiar información de Discord
+            youtube_user["avatar_discord_url"] = discord_only_user.get("avatar_discord_url")
+            youtube_user["avatar_discord_local"] = discord_only_user.get("avatar_discord_local")
+            
+            # Eliminar el usuario solo de Discord
+            users.remove(discord_only_user)
+            user_cache["users"] = users
+            print(f"   🗑 Usuario solo de Discord eliminado del cache")
+        else:
+            print(f"   ℹ No hay usuario solo de Discord, continuando...")
+            print(f"💰 Puntos actuales en YouTube: {youtube_user.get('puntos', 0):.1f}₱")
+        
+        # Agregar discord_id al usuario de YouTube
         youtube_user["discord_id"] = discord_id_str
         
         if "platform_sources" not in youtube_user:
             youtube_user["platform_sources"] = []
         if "discord" not in youtube_user["platform_sources"]:
             youtube_user["platform_sources"].append("discord")
-        
-        print(f"💰 Puntos actuales en YouTube: {youtube_user.get('puntos', 0):.1f}₱")
     
     # CASO 3: Ambos son el mismo usuario -> ya está vinculado
     elif discord_user and youtube_user and discord_user.get("id") == youtube_user.get("id"):

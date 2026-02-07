@@ -399,6 +399,9 @@ async def youtube_listener(
                                 # Esto garantiza que los puntos ganados en YouTube se transferirán correctamente
                                 cache_user_info(canal_id, autor, avatar_url, is_moderator, is_member)
 
+                                # Recargar el cache después de actualizar info del usuario
+                                user_cache = load_user_cache()
+
                                 # Evitar re-vincular si ya está unido
                                 linked_youtube = next(
                                     (u for u in user_cache.get("users", []) if u.get("youtube_id") == canal_id and u.get("discord_id")),

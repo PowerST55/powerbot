@@ -1,55 +1,93 @@
-import os
+"""
+PowerBot - Sistema de consola interactivo asincrónico.
+
+Frontend principal que enseña mejor el flujo de la aplicación:
+1. Bootstrap: Instala dependencias y verifica el entorno
+2. Consola: Inicia la interfaz interactiva
+"""
+
+import asyncio
 import sys
-import traceback
+import logging
+from pathlib import Path
+
+# Configurar logging (usando la consola centralizada de colores)
+logging.basicConfig(
+	level=logging.INFO,
+	format="%(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
-def _in_venv() -> bool:
-	return sys.prefix != getattr(sys, "base_prefix", sys.prefix)
-
-
-def _venv_python(venv_dir: str) -> str | None:
-	if os.name == "nt":
-		candidate = os.path.join(venv_dir, "Scripts", "python.exe")
-	else:
-		candidate = os.path.join(venv_dir, "bin", "python")
-	return candidate if os.path.isfile(candidate) else None
-
-
-def _reexec_in_venv(venv_dir: str = ".venv") -> None:
-	if _in_venv():
-		return
-
-	script_dir = os.path.dirname(os.path.abspath(__file__))
-	project_dir = os.path.abspath(os.path.join(script_dir, os.pardir))
-
-	candidates = [
-		os.path.abspath(venv_dir),
-		os.path.join(project_dir, venv_dir),
-		os.path.join(script_dir, venv_dir),
-	]
-
-	for candidate_dir in candidates:
-		venv_python = _venv_python(candidate_dir)
-		if venv_python:
-			os.execv(venv_python, [venv_python, *sys.argv])
-
-	print("No se encontro el entorno virtual en ninguno de estos paths:")
-	for candidate_dir in candidates:
-		print(f"- {candidate_dir}")
-	print("Ejecutando con el interprete actual.")
-
-
-def main() -> None:
-	# TODO: coloca aqui la logica real de tu app
-	print("hola mundo")
+async def main() -> int:
+	"""
+	Función principal de PowerBot.
+	
+	Retorna:
+		int: Código de salida (0 = éxito, 1 = error)
+	"""
+	from backend.bootstrap import bootstrap, _reexec_in_venv
+	
+	# Obtener la consola configurada
+	try:
+		from backend.core import get_console
+		console = get_console()
+	except Exception:
+		# Fallback si la consola no está disponible
+		class SimpleConsole:
+			def print(self, msg):
+				print(msg)
+		console = SimpleConsole()  # type: ignore
+	
+	try:
+		# 1. Reejecutar en venv si es necesario (solo al inicio)
+		bootstrap_verbose = "--verbose" in sys.argv
+		_reexec_in_venv(None, ".venv")  # type: ignore
+		
+		# 2. Ejecutar bootstrap
+		if not bootstrap(verbose=bootstrap_verbose):
+			console.print("[error]✗ Bootstrap falló[/error]")
+			return 1
+		
+		# 3. Importar e iniciar la consola interactiva
+		from backend.console.console import start_console
+		
+		console.print("[header]PowerBot iniciado[/header]")
+		await start_console()
+		
+		return 0
+		
+	except KeyboardInterrupt:
+		console.print("\n[warning]⚠ Aplicación detenida por el usuario[/warning]")
+		return 130  # Código estándar para interrupción por Ctrl+C
+	except Exception as e:
+		console.print(f"[error]✗ Error fatal: {e}[/error]")
+		if "--verbose" in sys.argv:
+			import traceback
+			traceback.print_exc()
+		return 1
 
 
 if __name__ == "__main__":
-	_reexec_in_venv(".venv")
+	# Asegurar que estamos en el directorio correcto
+	backend_dir = Path(__file__).parent
+	sys.path.insert(0, str(backend_dir.parent))
+	
+	# Ejecutar el programa
 	try:
-		main()
-	except Exception:
-		traceback.print_exc()
-		if sys.stdin.isatty():
-			input("\nOcurrio un error. Presiona Enter para cerrar...")
-		raise
+		exit_code = asyncio.run(main())
+		sys.exit(exit_code)
+	except Exception as e:
+		# Intentar usar la consola con colores si está disponible
+		try:
+			from backend.core import get_console
+			console = get_console()
+			console.print(f"[error]✗ Error crítico: {e}[/error]")
+		except Exception:
+			print(f"✗ Error crítico: {e}")
+		
+		if "--verbose" in sys.argv:
+			import traceback
+			traceback.print_exc()
+		sys.exit(1)
+

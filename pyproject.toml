@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "powerbot"
+version = "v0.2.0-alpha"
+description = "Sistema de consola interactivo asincrónico con prompt_toolkit"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = {text = "MIT"}
+authors = [{name = "jhon-", email = "noreply@github.com"}]
+keywords = ["console", "cli", "async", "prompt-toolkit", "powerbot"]
+classifiers = [
+	"Development Status :: 3 - Alpha",
+	"Environment :: Console",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: MIT License",
+	"Natural Language :: Spanish",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Programming Language :: Python :: 3.13",
+	"Topic :: Software Development :: Libraries :: Python Modules",
+	"Topic :: System :: Shells",
+]
+
+dependencies = [
+	"prompt-toolkit>=3.0.36",
+	"rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+	"pytest>=7.4.0",
+	"pytest-asyncio>=0.21.0",
+	"black>=23.7.0",
+	"ruff>=0.0.280",
+	"mypy>=1.4.1",
+	"isort>=5.12.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jhon-/PowerBot"
+Documentation = "https://github.com/jhon-/PowerBot/wiki"
+Repository = "https://github.com/jhon-/PowerBot"
+Issues = "https://github.com/jhon-/PowerBot/issues"
+
+[tool.setuptools]
+packages = ["backend", "backend.console", "backend.core"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312", "py313"]
+include = '\.pyi?$'
+exclude = '''
+/(
+	\.git
+	| \.hg
+	| \.mypy_cache
+	| \.tox
+	| \.venv
+	| _build
+	| build
+	| dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "W", "I", "N", "UP", "B"]
+ignore = ["E501"]
+exclude = [".git", ".venv", "__pycache__", "build", "dist"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_mode = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_optional = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+

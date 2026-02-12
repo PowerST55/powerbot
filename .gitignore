@@ -2,9 +2,11 @@
 .venv/
 venv/
 env/
+ENV/
 
 # Carpeta antigua
 old/
+test/
 
 # Python
 __pycache__/
@@ -15,26 +17,59 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.eggs/
+
+# Testing
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # Sistema operativo
 .DS_Store
 Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
 
 # Datos sensibles
-keys/.env
+keys/
 .env
-.env.local
+.env.*
+!.env.example
 *.key
 *.pem
+*.secret
 
 # Logs
 *.log
+logs/
 
 # Cache
 .cache/
+.ruff_cache/
+
+# Archivos temporales
+*.tmp
+*.bak
+*.backup
+*~
+
+# Scripts locales de ejecución
+*.bat
+!install_dependencies.bat

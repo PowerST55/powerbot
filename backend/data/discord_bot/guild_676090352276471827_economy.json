@@ -1,0 +1,10 @@
+{
+  "currency": {
+    "name": "pew",
+    "symbol": "₱"
+  },
+  "points": {
+    "amount": 1,
+    "interval": 15
+  }
+}

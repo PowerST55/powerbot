@@ -1,0 +1,117 @@
+"""
+Gestión de configuración de economía para PowerBot Discord.
+Almacena: nombre de moneda, símbolo, límites, tasas, etc.
+"""
+from pathlib import Path
+from typing import Optional, Dict, Any
+import json
+
+
+class EconomyConfig:
+    """Gestiona configuración de economía del servidor"""
+    
+    def __init__(self, guild_id: int, data_dir: Path = None):
+        if data_dir is None:
+            # Calcula la ruta a backend/data/discord_bot/
+            data_dir = Path(__file__).parent.parent.parent.parent / "data" / "discord_bot"
+        
+        self.guild_id = guild_id
+        self.data_dir = data_dir
+        self.config_file = self.data_dir / f"guild_{guild_id}_economy.json"
+        
+        self._defaults = {
+            "currency": {
+                "name": "pews",              # Nombre de la moneda
+                "symbol": "💎",             # Símbolo
+            },
+            "points": {
+                "amount": 10,               # Cantidad de puntos que da el bot
+                "interval": 300,            # Intervalo en segundos (300 = 5 min)
+            }
+        }
+        
+        self._config = self._load()
+    
+    def _load(self) -> Dict[str, Any]:
+        """Carga configuración desde JSON"""
+        if self.config_file.exists():
+            try:
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    loaded = json.load(f)
+                return {**self._defaults, **loaded}
+            except Exception as e:
+                print(f"⚠️ Error cargando economía del servidor {self.guild_id}: {e}")
+                return self._defaults.copy()
+        return self._defaults.copy()
+    
+    def _save(self):
+        """Guarda configuración a JSON"""
+        try:
+            self.data_dir.mkdir(parents=True, exist_ok=True)
+            with open(self.config_file, 'w', encoding='utf-8') as f:
+                json.dump(self._config, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"❌ Error guardando economía del servidor {self.guild_id}: {e}")
+    
+    def get_currency_name(self) -> str:
+        """Obtiene el nombre de la moneda"""
+        return self._config["currency"]["name"]
+    
+    def get_currency_symbol(self) -> str:
+        """Obtiene el símbolo de la moneda"""
+        return self._config["currency"]["symbol"]
+    
+    def set_currency(self, name: str, symbol: str):
+        """Actualiza el nombre y símbolo de la moneda"""
+        self._config["currency"]["name"] = name
+        self._config["currency"]["symbol"] = symbol
+        self._save()
+    
+    def get_points_amount(self) -> int:
+        """Obtiene la cantidad de puntos que da el bot"""
+        return self._config["points"]["amount"]
+    
+    def get_points_interval(self) -> int:
+        """Obtiene el intervalo de puntos en segundos"""
+        return self._config["points"]["interval"]
+    
+    def set_points_amount(self, amount: int):
+        """Actualiza la cantidad de puntos"""
+        self._config["points"]["amount"] = amount
+        self._save()
+    
+    def set_points_interval(self, interval: int):
+        """Actualiza el intervalo de puntos en segundos"""
+        self._config["points"]["interval"] = interval
+        self._save()
+    
+    def set_points(self, amount: int, interval: int):
+        """Actualiza cantidad e intervalo de puntos"""
+        self._config["points"]["amount"] = amount
+        self._config["points"]["interval"] = interval
+        self._save()
+
+
+class EconomyManager:
+    """Gestiona economía de múltiples servidores"""
+    
+    def __init__(self):
+        self._configs: Dict[int, EconomyConfig] = {}
+    
+    def get_config(self, guild_id: int) -> EconomyConfig:
+        """Obtiene configuración de economía de un servidor"""
+        if guild_id not in self._configs:
+            self._configs[guild_id] = EconomyConfig(guild_id)
+        return self._configs[guild_id]
+
+
+# Instancia global
+_economy_manager = None
+
+
+def get_economy_config(guild_id: int) -> EconomyConfig:
+    """Obtiene la configuración de economía de un servidor"""
+    global _economy_manager
+    if _economy_manager is None:
+        _economy_manager = EconomyManager()
+    return _economy_manager.get_config(guild_id)

@@ -186,6 +186,19 @@ def setup_admin_commands(bot: commands.Bot):
             
             await interaction.response.send_message(embed=embed, ephemeral=True)
             
+            # Logging de cambio de moneda
+            await log_success(
+                bot,
+                interaction.guild.id,
+                "Moneda actualizada",
+                f"La moneda del servidor ha sido actualizada por {interaction.user.mention}",
+                fields={
+                    "Moneda": nombre,
+                    "Símbolo": simbolo,
+                    "Configurado por": interaction.user.display_name
+                }
+            )
+            
         except Exception as e:
             embed = discord.Embed(
                 title="❌ Error",
@@ -250,10 +263,163 @@ def setup_admin_commands(bot: commands.Bot):
             
             await interaction.response.send_message(embed=embed, ephemeral=True)
             
+            # Logging de cambio de puntos
+            await log_success(
+                bot,
+                interaction.guild.id,
+                "Configuración de puntos actualizada",
+                f"La configuración de puntos ha sido actualizada por {interaction.user.mention}",
+                fields={
+                    "Cantidad": f"{amount} puntos",
+                    "Intervalo": f"{minutes:.1f} minutos",
+                    "Configurado por": interaction.user.display_name
+                }
+            )
+            
         except Exception as e:
             embed = discord.Embed(
                 title="❌ Error",
                 description=f"Error al configurar puntos: {str(e)}",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+    
+    @set_group.command(name="earning_channel", description="Agrega/elimina canales donde se ganan puntos hablando")
+    @app_commands.describe(
+        accion="Agregar o eliminar canal",
+        channel="Canal a configurar"
+    )
+    @app_commands.choices(accion=[
+        app_commands.Choice(name="➕ Agregar", value="add"),
+        app_commands.Choice(name="➖ Eliminar", value="remove"),
+        app_commands.Choice(name="📋 Ver lista", value="list"),
+    ])
+    async def set_earning_channel(interaction: discord.Interaction, accion: app_commands.Choice[str], channel: discord.TextChannel = None):
+        """Configura canales donde se ganan puntos hablando - Solo administradores"""
+        
+        # Verificar permisos
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acceso denegado",
+                description="Solo los administradores pueden usar este comando.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        try:
+            economy_config = get_economy_config(interaction.guild.id)
+            
+            if accion.value == "add":
+                # Agregar canal
+                if not channel:
+                    embed = discord.Embed(
+                        title="❌ Error",
+                        description="Debes especificar un canal para agregar.",
+                        color=discord.Color.red()
+                    )
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                    return
+                
+                success = economy_config.add_earning_channel(channel.id)
+                
+                if success:
+                    embed = discord.Embed(
+                        title="✅ Canal de ganancias agregado",
+                        description=f"Los usuarios ahora ganarán puntos al escribir en {channel.mention}",
+                        color=discord.Color.green()
+                    )
+                    
+                    # Logging de canal agregado
+                    await log_info(
+                        bot,
+                        interaction.guild.id,
+                        "Canal de ganancias agregado",
+                        f"Canal {channel.mention} agregado a la lista por {interaction.user.mention}",
+                        fields={
+                            "Canal": channel.name,
+                            "Agregado por": interaction.user.display_name
+                        }
+                    )
+                else:
+                    embed = discord.Embed(
+                        title="ℹ️ Canal ya configurado",
+                        description=f"{channel.mention} ya está en la lista de canales de ganancias",
+                        color=discord.Color.blue()
+                    )
+            
+            elif accion.value == "remove":
+                # Eliminar canal
+                if not channel:
+                    embed = discord.Embed(
+                        title="❌ Error",
+                        description="Debes especificar un canal para eliminar.",
+                        color=discord.Color.red()
+                    )
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                    return
+                
+                success = economy_config.remove_earning_channel(channel.id)
+                
+                if success:
+                    embed = discord.Embed(
+                        title="✅ Canal de ganancias eliminado",
+                        description=f"{channel.mention} ya no dará puntos",
+                        color=discord.Color.green()
+                    )
+                    
+                    # Logging de canal eliminado
+                    await log_info(
+                        bot,
+                        interaction.guild.id,
+                        "Canal de ganancias eliminado",
+                        f"Canal {channel.mention} eliminado de la lista por {interaction.user.mention}",
+                        fields={
+                            "Canal": channel.name,
+                            "Eliminado por": interaction.user.display_name
+                        }
+                    )
+                else:
+                    embed = discord.Embed(
+                        title="ℹ️ Canal no configurado",
+                        description=f"{channel.mention} no estaba en la lista de canales de ganancias",
+                        color=discord.Color.blue()
+                    )
+            
+            else:  # list
+                embed = discord.Embed(
+                    title="📋 Canales de ganancias",
+                    description="Canales donde se ganan puntos hablando",
+                    color=discord.Color.blue()
+                )
+                
+                earning_channels = economy_config.get_earning_channels()
+                if earning_channels:
+                    channels_list = "\n".join([f"• <#{ch_id}>" for ch_id in earning_channels])
+                    embed.add_field(name="Canales configurados", value=channels_list, inline=False)
+                else:
+                    embed.add_field(name="Canales configurados", value="*Ninguno configurado*", inline=False)
+                
+                embed.set_footer(text=f"Total: {len(earning_channels)} canal(es)")
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            
+            # Mostrar lista actual de canales
+            earning_channels = economy_config.get_earning_channels()
+            if earning_channels:
+                channels_list = "\n".join([f"• <#{ch_id}>" for ch_id in earning_channels])
+                embed.add_field(name="Canales actuales", value=channels_list, inline=False)
+            else:
+                embed.add_field(name="Canales actuales", value="*Ninguno configurado*", inline=False)
+            
+            embed.set_footer(text="Guardado en data/discord_bot/")
+            
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+        except Exception as e:
+            embed = discord.Embed(
+                title="❌ Error",
+                description=f"Error al configurar canal de ganancias: {str(e)}",
                 color=discord.Color.red()
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -352,6 +518,7 @@ def setup_admin_commands(bot: commands.Bot):
         app_commands.Choice(name="Roles", value="roles"),
         app_commands.Choice(name="Canales", value="channels"),
         app_commands.Choice(name="Economía", value="economy"),
+        app_commands.Choice(name="earning_channel", value="earning_channel"),
     ])
     async def clean(interaction: discord.Interaction, tipo: app_commands.Choice[str]):
         """Limpia configuración guardada - Solo administradores"""
@@ -368,11 +535,6 @@ def setup_admin_commands(bot: commands.Bot):
         
         try:
             tipo_valor = tipo.value
-            tipo_nombre = {
-                "roles": "Roles",
-                "channels": "Canales",
-                "economy": "Economía",
-            }
             
             if tipo_valor == "roles":
                 # Limpiar roles
@@ -409,6 +571,24 @@ def setup_admin_commands(bot: commands.Bot):
                     description="Configuración de economía reiniciada a valores por defecto",
                     color=discord.Color.green()
                 )
+            
+            elif tipo_valor == "earning_channel":
+                # Limpiar canales de ganancias
+                economy_config = get_economy_config(interaction.guild.id)
+                economy_config.clear_earning_channels()
+                
+                embed = discord.Embed(
+                    title="✅ earning_channel limpiado",
+                    description="Todos los canales de ganancias han sido eliminados",
+                    color=discord.Color.green()
+                )
+            
+            tipo_nombre = {
+                "roles": "Roles",
+                "channels": "Canales",
+                "economy": "Economía",
+                "earning_channel": "earning_channel",
+            }
             
             embed.add_field(name="Tipo", value=f"`{tipo_nombre.get(tipo_valor)}`", inline=True)
             embed.set_footer(text="Puedes volver a configurar este apartado")

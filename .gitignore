@@ -52,6 +52,7 @@ keys/
 .env
 .env.*
 !.env.example
+!keys/.gitkeep
 *.key
 *.pem
 *.secret

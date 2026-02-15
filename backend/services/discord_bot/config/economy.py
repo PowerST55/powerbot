@@ -27,7 +27,8 @@ class EconomyConfig:
             "points": {
                 "amount": 10,               # Cantidad de puntos que da el bot
                 "interval": 300,            # Intervalo en segundos (300 = 5 min)
-            }
+            },
+            "earning_channels": []          # Canales donde se ganan puntos
         }
         
         self._config = self._load()
@@ -89,6 +90,75 @@ class EconomyConfig:
         """Actualiza cantidad e intervalo de puntos"""
         self._config["points"]["amount"] = amount
         self._config["points"]["interval"] = interval
+        self._save()
+    
+    # === MÉTODOS PARA CANALES DE GANANCIAS ===
+    
+    def get_earning_channels(self) -> list:
+        """
+        Obtiene la lista de canales donde se ganan puntos.
+        
+        Returns:
+            list: Lista de IDs de canales
+        """
+        return self._config.get("earning_channels", [])
+    
+    def add_earning_channel(self, channel_id: int) -> bool:
+        """
+        Agrega un canal a la lista de canales de ganancias.
+        
+        Args:
+            channel_id: ID del canal de Discord
+            
+        Returns:
+            bool: True si se agregó, False si ya existía
+        """
+        earning_channels = self._config.get("earning_channels", [])
+        
+        if channel_id in earning_channels:
+            return False
+        
+        earning_channels.append(channel_id)
+        self._config["earning_channels"] = earning_channels
+        self._save()
+        return True
+    
+    def remove_earning_channel(self, channel_id: int) -> bool:
+        """
+        Elimina un canal de la lista de canales de ganancias.
+        
+        Args:
+            channel_id: ID del canal de Discord
+            
+        Returns:
+            bool: True si se eliminó, False si no existía
+        """
+        earning_channels = self._config.get("earning_channels", [])
+        
+        if channel_id not in earning_channels:
+            return False
+        
+        earning_channels.remove(channel_id)
+        self._config["earning_channels"] = earning_channels
+        self._save()
+        return True
+    
+    def is_earning_channel(self, channel_id: int) -> bool:
+        """
+        Verifica si un canal da puntos por hablar.
+        
+        Args:
+            channel_id: ID del canal de Discord
+            
+        Returns:
+            bool: True si es un canal de ganancias
+        """
+        earning_channels = self._config.get("earning_channels", [])
+        return channel_id in earning_channels
+    
+    def clear_earning_channels(self):
+        """Elimina todos los canales de ganancias configurados"""
+        self._config["earning_channels"] = []
         self._save()
 
 

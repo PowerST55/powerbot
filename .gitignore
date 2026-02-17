@@ -61,6 +61,12 @@ keys/
 *.log
 logs/
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
 # Cache
 .cache/
 .ruff_cache/

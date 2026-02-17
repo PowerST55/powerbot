@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "powerbot"
-version = "v0.2.0-alpha"
+version = "0.4.0-alpha"
 description = "Sistema de consola interactivo asincrónico con prompt_toolkit"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
@@ -30,6 +30,8 @@ classifiers = [
 dependencies = [
 	"prompt-toolkit>=3.0.36",
 	"rich>=13.7.0",
+	"discord.py>=2.3.0",
+	"python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -49,7 +51,7 @@ Repository = "https://github.com/jhon-/PowerBot"
 Issues = "https://github.com/jhon-/PowerBot/issues"
 
 [tool.setuptools]
-packages = ["backend", "backend.console", "backend.core"]
+packages = ["backend", "backend.console", "backend.core", "backend.services.discord_bot"]
 
 [tool.black]
 line-length = 100

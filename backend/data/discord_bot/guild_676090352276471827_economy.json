@@ -1,10 +1,15 @@
 {
   "currency": {
-    "name": "pew",
+    "name": "Pews",
     "symbol": "₱"
   },
   "points": {
-    "amount": 1,
-    "interval": 15
-  }
+    "amount": 5,
+    "interval": 300
+  },
+  "earning_channels": [
+    1029761977477763184,
+    1088858976474632242,
+    1471569781835432029
+  ]
 }

@@ -52,6 +52,7 @@ keys/
 .env
 .env.*
 !.env.example
+!keys/.gitkeep
 *.key
 *.pem
 *.secret
@@ -65,6 +66,12 @@ keys/
 # Logs
 *.log
 logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
 
 # Cache
 .cache/

@@ -9,6 +9,7 @@ import asyncio
 
 # Lazy loading de consola para evitar problemas de inicialización
 _console = None
+_command_loop: Optional[asyncio.AbstractEventLoop] = None
 
 def _get_console():
 	"""Obtiene la consola, inicializándola si es necesario."""
@@ -17,6 +18,12 @@ def _get_console():
 		from backend.core import get_console
 		_console = get_console()
 	return _console
+
+
+def set_command_event_loop(loop: asyncio.AbstractEventLoop) -> None:
+	"""Establece el event loop principal para ejecutar comandos async."""
+	global _command_loop
+	_command_loop = loop
 
 
 class CommandContext:
@@ -120,6 +127,15 @@ async def cmd_help(ctx: CommandContext) -> None:
 	ctx.print("  colortest      - Prueba todos los colores disponibles")
 	ctx.print("  clean          - Limpia la consola")
 	ctx.print("  restart (rst)  - Reinicia el programa completamente")
+	ctx.print("  say <msg>      - Envia un mensaje a YouTube Live")
+	ctx.print("  yapi           - 🚀 Conecta YouTube e inicia listener (TODO EN UNO)")
+	ctx.print("  yt <subcmd>    - Comandos de YouTube API")
+	ctx.print("                   • yt autorun      - Alterna inicio automático")
+	ctx.print("                   • yt listener     - Inicia listener de chat")
+	ctx.print("                   • yt stop_listener- Detiene listener")
+	ctx.print("                   • yt logout       - Cierra sesión y borra token")
+	ctx.print("                   • yt status       - Estado de YouTube")
+	ctx.print("                   • yt help         - Ayuda de YouTube")
 	ctx.print("  help           - Muestra esta ayuda")
 	ctx.print("  exit           - Salir del programa")
 
@@ -155,12 +171,85 @@ async def cmd_exit(ctx: CommandContext) -> None:
 	ctx.print("Saliendo...")
 
 
+async def cmd_yt(ctx: CommandContext) -> None:
+	"""Comando yt - ejecuta subcomandos de YouTube API"""
+	from .commands_youtube import YOUTUBE_COMMANDS
+	
+	if not ctx.args:
+		# Sin argumentos, mostrar ayuda
+		if "help" in YOUTUBE_COMMANDS:
+			await YOUTUBE_COMMANDS["help"](ctx)
+		return
+	
+	subcommand = ctx.args[0]
+	yt_ctx = CommandContext(ctx.args[1:])
+	
+	if subcommand not in YOUTUBE_COMMANDS:
+		yt_ctx.error(f"Subcomando desconocido: 'yt {subcommand}'")
+		yt_ctx.print("Usa 'yt help' para ver comandos disponibles")
+		yt_ctx.render()
+		return
+	
+	# Ejecutar el subcomando de YouTube
+	await YOUTUBE_COMMANDS[subcommand](yt_ctx)
+	yt_ctx.render()
+
+
+async def cmd_yapi(ctx: CommandContext) -> None:
+	"""Comando yapi - Conecta YouTube API e inicia el listener automáticamente"""
+	from .commands_youtube import YOUTUBE_COMMANDS
+	
+	# Ejecutar el comando yapi de YouTube
+	if "yapi" in YOUTUBE_COMMANDS:
+		await YOUTUBE_COMMANDS["yapi"](ctx)
+	else:
+		ctx.error("Comando yapi no disponible")
+
+
+async def cmd_say(ctx: CommandContext) -> None:
+	"""Comando say - envia un mensaje a YouTube Live."""
+	from .commands_youtube import _get_listener, _get_youtube
+	from backend.services.youtube_api.send_message import send_chat_message
+
+	if not ctx.args:
+		ctx.error("Uso: say <mensaje>")
+		return
+
+	message_text = " ".join(ctx.args).strip()
+	if not message_text:
+		ctx.error("El mensaje no puede estar vacio")
+		return
+
+	yt = _get_youtube()
+	listener = _get_listener()
+
+	if not yt or not yt.is_connected():
+		ctx.error("YouTube API no esta conectada")
+		ctx.print("Primero ejecuta yapi o activa autorun")
+		return
+
+	if not listener or not listener.is_running:
+		ctx.error("El listener no esta activo")
+		ctx.print("Primero ejecuta yapi para iniciar el listener")
+		return
+
+	ok = await send_chat_message(yt.client, listener.live_chat_id, message_text)
+	if ok:
+		ctx.success("Mensaje enviado a YouTube Live")
+	else:
+		ctx.error("No se pudo enviar el mensaje")
+
+
 # Registro de comandos con alias
 _COMMAND_FUNCTIONS: Dict[str, Callable[[CommandContext], Any]] = {
 	"test": cmd_test,
 	"colortest": cmd_colortest,
 	"clean": cmd_clean,
 	"restart": cmd_restart,
+	"say": cmd_say,
+	"yt": cmd_yt,
+	"youtube": cmd_yt,
+	"yapi": cmd_yapi,
 	"help": cmd_help,
 	"exit": cmd_exit,
 }
@@ -243,8 +332,13 @@ def execute_command_sync(command_line: str) -> tuple[Any, bool]:
 
 	try:
 		ctx = CommandContext(args)
-		# Ejecutar el comando async usando asyncio.run()
-		asyncio.run(COMMANDS[cmd_name](ctx))
+		# Ejecutar en el loop principal si está disponible
+		if _command_loop and _command_loop.is_running():
+			future = asyncio.run_coroutine_threadsafe(COMMANDS[cmd_name](ctx), _command_loop)
+			future.result()
+		else:
+			# Fallback: crear un loop temporal
+			asyncio.run(COMMANDS[cmd_name](ctx))
 		should_exit = cmd_name == "exit"
 		return ctx, should_exit
 	except Exception as e:

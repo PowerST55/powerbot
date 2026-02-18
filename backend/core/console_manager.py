@@ -56,7 +56,7 @@ def _configure_windows_terminal() -> None:
 			pass
 
 
-def _create_configured_console() -> Console:
+def _create_configured_console(output_stream) -> Console:
 	"""Crea e configura la instancia global de consola."""
 	
 	# Primero, intentar configurar Windows
@@ -79,7 +79,7 @@ def _create_configured_console() -> Console:
 	# force_interactive: False para evitar problemas en pipes
 	# width: Ancho fijo para evitar cambios por resize
 	console_instance = Console(
-		file=sys.stdout,
+		file=output_stream,
 		theme=theme,
 		force_terminal=True,
 		force_interactive=False,
@@ -94,7 +94,13 @@ def _create_configured_console() -> Console:
 
 
 # Crear la instancia global de consola una sola vez
-_global_console = _create_configured_console()
+_global_console = _create_configured_console(sys.stdout)
+
+
+def set_console_output(output_stream) -> None:
+	"""Actualiza la consola global para escribir en un stream especifico."""
+	global _global_console
+	_global_console = _create_configured_console(output_stream)
 
 
 def get_console() -> Console:
@@ -123,4 +129,4 @@ def get_console() -> Console:
 console = _global_console
 
 
-__all__ = ["console", "get_console"]
+__all__ = ["console", "get_console", "set_console_output"]

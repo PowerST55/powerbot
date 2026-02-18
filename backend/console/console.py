@@ -15,7 +15,7 @@ import subprocess
 from prompt_toolkit import PromptSession
 from prompt_toolkit.styles import Style as PromptStyle
 from prompt_toolkit.patch_stdout import patch_stdout
-from .commands_general import execute_command_sync
+from .commands import execute_command_sync, set_command_event_loop
 
 # Lazy loading de consola para evitar problemas de inicialización
 _rich_console = None
@@ -71,12 +71,8 @@ class ConsoleManager:
 		self.command_count = 0
 		self.version = _get_version()
 		
-		# Configurar PromptSession según el contexto
-		# En VS Code, usar input() simple es más confiable
-		if _is_vscode_terminal():
-			self.session = None  # Usaremos input() en lugar de PromptSession
-		else:
-			self.session = PromptSession(style=CONSOLE_STYLE)
+		# Usar PromptSession siempre para evitar interferencias con el prompt
+		self.session = PromptSession(style=CONSOLE_STYLE)
 
 	def _read_input(self, prompt: str) -> str:
 		"""
@@ -84,16 +80,10 @@ class ConsoleManager:
 		- Usa PromptSession en terminals normales
 		- Usa input() en VS Code
 		"""
-		if self.session is not None:
-			try:
-				return self.session.prompt(prompt)
-			except Exception:
-				# Fallback a input() si falla
-				sys.stdout.write(prompt)
-				sys.stdout.flush()
-				return sys.stdin.readline().rstrip('\n\r')
-		else:
-			# VS Code: usar input() directamente con flush explícito
+		try:
+			return self.session.prompt(prompt)
+		except Exception:
+			# Fallback a input() si falla
 			sys.stdout.write(prompt)
 			sys.stdout.flush()
 			return sys.stdin.readline().rstrip('\n\r')
@@ -108,24 +98,39 @@ class ConsoleManager:
 		console.print(f"[header]PowerBot v{self.version}[/header]")
 		console.print("=" * 50)
 		
-		# Advertencia si está en VS Code
-		if _is_vscode_terminal():
-			console.print("\n[warning]⚠ NOTA: Terminal integrada de VS Code detectada[/warning]")
-			console.print("[info]Se recomienda usar: Ctrl+` → Click dropdown → 'Select Default Profile'[/info]")
-			console.print("[info]O ejecutar desde PowerShell/CMD directo en tu PC[/info]\n")
-		
+		# Mantener mensaje de ayuda sin forzar salida de VS Code
 		console.print("Escribe 'help' para ver los comandos disponibles\n")
 
 		try:
-			# CRÍTICO: patch_stdout() solo si usamos PromptSession
-			# En VS Code, input() funciona mejor sin patch_stdout()
-			if self.session is not None:
-				# Usar PromptSession con patch_stdout()
-				with patch_stdout():
+			# CRÍTICO: patch_stdout() evita que el prompt se mezcle con prints
+			# (mensajes de YouTube u otros hilos)
+			from backend.core import set_console_output
+			from prompt_toolkit.formatted_text import ANSI
+			from prompt_toolkit.shortcuts import print_formatted_text
+
+			class _PromptToolkitOutput:
+				"""Salida compatible con prompt_toolkit que interpreta ANSI."""
+				def write(self, data: str) -> None:
+					if not data:
+						return
+					print_formatted_text(ANSI(data), end="")
+
+				def flush(self) -> None:
+					return
+
+				def isatty(self) -> bool:
+					return True
+
+				@property
+				def encoding(self) -> str:
+					return sys.stdout.encoding or "utf-8"
+
+			with patch_stdout():
+				set_console_output(_PromptToolkitOutput())
+				try:
 					self._run_console_loop(console)
-			else:
-				# Usar input() sin patch_stdout()
-				self._run_console_loop(console)
+				finally:
+					set_console_output(sys.__stdout__)
 
 		except Exception as e:
 			console.print(f"[error][ERROR] Error en la consola: {e}[/error]")
@@ -162,6 +167,7 @@ async def start_console() -> None:
 	# Ejecutar el loop de la consola en un thread separado
 	# Esto evita bloquear el event loop de asyncio
 	loop = asyncio.get_event_loop()
+	set_command_event_loop(loop)
 	await loop.run_in_executor(None, console.run_sync)
 
 

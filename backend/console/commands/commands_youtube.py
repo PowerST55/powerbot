@@ -1,0 +1,523 @@
+"""
+Comandos de YouTube API para la consola interactiva.
+"""
+
+import json
+import asyncio
+from pathlib import Path
+from typing import Optional
+
+# Lazy loading
+_console = None
+_youtube_instance = None
+_youtube_listener = None
+_chat_id_manager = None
+
+CONFIG_PATH = Path(__file__).parent.parent.parent / "data" / "bot_config.json"
+
+
+def _get_console():
+    """Obtiene la consola."""
+    global _console
+    if _console is None:
+        from backend.core import get_console
+        _console = get_console()
+    return _console
+
+
+def _get_youtube():
+    """Obtiene la instancia de YouTube API."""
+    global _youtube_instance
+    return _youtube_instance
+
+
+def _set_youtube(instance):
+    """Establece la instancia de YouTube API."""
+    global _youtube_instance
+    _youtube_instance = instance
+
+
+def _get_listener():
+    """Obtiene la instancia del listener."""
+    global _youtube_listener
+    return _youtube_listener
+
+
+def _set_listener(instance):
+    """Establece la instancia del listener."""
+    global _youtube_listener
+    _youtube_listener = instance
+
+
+def _get_chat_id_manager():
+    """Obtiene la instancia del ChatIdManager."""
+    global _chat_id_manager
+    return _chat_id_manager
+
+
+def _set_chat_id_manager(instance):
+    """Establece la instancia del ChatIdManager."""
+    global _chat_id_manager
+    _chat_id_manager = instance
+
+
+def _load_config() -> dict:
+    """Carga la configuración del bot."""
+    if CONFIG_PATH.exists():
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {"youtube": {"autorun": False}}
+
+
+def _save_config(config: dict) -> None:
+    """Guarda la configuración del bot."""
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+
+
+class CommandContext:
+    """Contexto de comando."""
+    def __init__(self, args: list):
+        self.args = args
+        self.output = []
+
+    def print(self, message: str) -> None:
+        self.output.append(("info", message))
+
+    def error(self, message: str) -> None:
+        self.output.append(("error", message))
+
+    def warning(self, message: str) -> None:
+        self.output.append(("warning", message))
+
+    def success(self, message: str) -> None:
+        self.output.append(("success", message))
+    
+    def render(self) -> None:
+        """Renderiza todos los mensajes."""
+        console = _get_console()
+        for msg_type, message in self.output:
+            console.print(f"[{msg_type}]{message}[/{msg_type}]")
+
+
+# ============================================================================
+# COMANDOS DE YOUTUBE
+# ============================================================================
+
+async def cmd_youtube_yapi(ctx: CommandContext) -> None:
+    """
+    Activa YouTube API e inicia el listener automáticamente.
+    Busca la transmisión en vivo y comienza a escuchar mensajes.
+    Uso: yapi
+    """
+    console = _get_console()
+    yt = _get_youtube()
+    listener = _get_listener()
+    
+    # Verificar si ya hay un listener corriendo
+    if listener and listener.is_running:
+        ctx.warning("El listener ya está en ejecución")
+        ctx.print("Usa 'yt status' para ver el estado")
+        return
+    
+    try:
+        # Paso 1: Conectar YouTube API si no está conectado
+        if not yt or not yt.is_connected():
+            console.print("[info]🔌 Conectando YouTube API...[/info]")
+            
+            from backend.services.youtube_api import YouTubeAPI
+            yt = YouTubeAPI()
+            
+            if not yt.connect():
+                ctx.error("No se pudo conectar a YouTube API")
+                ctx.print("Verifica tus credenciales en backend/keys/")
+                return
+            
+            _set_youtube(yt)
+            console.print("[success]✅ YouTube API conectado[/success]")
+        else:
+            console.print("[info]✅ YouTube API ya está conectado[/info]")
+        
+        # Paso 2: Crear ChatIdManager
+        chat_manager = _get_chat_id_manager()
+        if not chat_manager:
+            from backend.services.youtube_api import ChatIdManager
+            chat_manager = ChatIdManager(yt.client, check_interval=60)
+            _set_chat_id_manager(chat_manager)
+            console.print("[info]📋 ChatIdManager creado[/info]")
+        
+        # Paso 3: Buscar transmisión en vivo (siempre forzar actualización)
+        console.print("[info]🔍 Buscando transmisión en vivo...[/info]")
+        live_chat_id = chat_manager.update_chat_id(force_fetch=True)
+        
+        if not live_chat_id:
+            console.print("\n" + "="*60)
+            ctx.warning("⚠️  No hay transmisión en vivo activa")
+            console.print("="*60)
+            console.print("")
+            ctx.print("💡 Acciones disponibles:")
+            ctx.print("   • Inicia una transmisión en YouTube")
+            ctx.print("   • Ejecuta 'yapi' nuevamente cuando haya transmisión")
+            ctx.print("   • Usa 'yt status' para verificar el estado")
+            console.print("")
+            return
+        
+        console.print(f"[success]✅ Transmisión encontrada: {live_chat_id[:20]}...[/success]")
+        
+        # Paso 4: Crear y configurar listener
+        from backend.services.youtube_api import (
+            YouTubeListener,
+            console_message_handler,
+            command_processor_handler
+        )
+        
+        listener = YouTubeListener(yt.client, live_chat_id)
+        
+        # Agregar handlers
+        listener.add_message_handler(console_message_handler)
+
+        async def _command_handler(message):
+            try:
+                await command_processor_handler(message, yt.client, live_chat_id)
+            except Exception as exc:
+                console.print(f"[warning]⚠ Error en comandos de chat: {exc}[/warning]")
+
+        listener.add_message_handler(_command_handler)
+        
+        console.print("[info]🎧 Configurando listener de mensajes...[/info]")
+        console.print("[info]👁️  Chat ID fijo mientras el listener esté activo[/info]")
+        
+        # Paso 6: Iniciar listener
+        await listener.start()
+        _set_listener(listener)
+        
+        # Mensaje de éxito
+        console.print("\n" + "="*60)
+        console.print("[bold green]🎬 YOUTUBE API ACTIVO - ESCUCHANDO CHAT[/bold green]")
+        console.print("="*60)
+        console.print("")
+        ctx.success("✅ Sistema configurado correctamente")
+        ctx.print("📡 Listener de mensajes activo")
+        ctx.print("🔄 Chat ID queda fijo hasta reiniciar yapi")
+        ctx.print("")
+        ctx.print("💡 Comandos disponibles:")
+        ctx.print("   • 'yt status' - Ver estado del sistema")
+        ctx.print("   • 'yt stop_listener' - Detener el listener")
+        console.print("")
+        
+    except Exception as e:
+        ctx.error(f"❌ Error al iniciar YAPI: {str(e)}")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
+
+
+async def cmd_youtube_logout(ctx: CommandContext) -> None:
+    """
+    Cierra sesión de YouTube y borra el token de autenticación.
+    Uso: yt logout
+    """
+    console = _get_console()
+    yt = _get_youtube()
+    listener = _get_listener()
+    chat_manager = _get_chat_id_manager()
+    
+    try:
+        # Paso 1: Detener listener si está activo
+        if listener and listener.is_running:
+            console.print("[info]🛑 Deteniendo listener activo...[/info]")
+            await listener.stop()
+            _set_listener(None)
+        
+        # Paso 2: Detener monitoreo si está activo
+        if chat_manager and chat_manager.is_monitoring:
+            console.print("[info]🛑 Deteniendo monitoreo de chat ID...[/info]")
+            await chat_manager.stop_monitoring()
+            _set_chat_id_manager(None)
+        
+        # Paso 3: Desconectar YouTube API
+        if yt and yt.is_connected():
+            console.print("[info]🔌 Desconectando YouTube API...[/info]")
+            yt.disconnect()
+            _set_youtube(None)
+        
+        # Paso 4: Borrar el archivo de token
+        from pathlib import Path
+        backend_dir = Path(__file__).parent.parent.parent
+        token_path = backend_dir / "keys" / "ytkey.json"
+        
+        if token_path.exists():
+            console.print(f"[info]🗑️  Borrando token: {token_path.name}...[/info]")
+            token_path.unlink()
+            console.print("[success]✅ Token borrado exitosamente[/success]")
+        else:
+            console.print("[info]ℹ️  No se encontró token para borrar[/info]")
+        
+        # Mensaje final
+        console.print("\n" + "="*60)
+        console.print("[bold green]🚪 SESIÓN DE YOUTUBE CERRADA[/bold green]")
+        console.print("="*60)
+        console.print("")
+        ctx.success("✅ Desconexión completa")
+        ctx.print("📋 Estado:")
+        ctx.print("   • Listener detenido")
+        ctx.print("   • Monitoreo detenido")
+        ctx.print("   • Token borrado")
+        ctx.print("   • API desconectada")
+        ctx.print("")
+        ctx.print("💡 Para volver a conectar:")
+        ctx.print("   • Ejecuta 'yapi' para reconectar")
+        ctx.print("   • Se te pedirá autenticación nuevamente")
+        console.print("")
+        
+    except Exception as e:
+        ctx.error(f"❌ Error al cerrar sesión: {str(e)}")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
+
+
+async def cmd_youtube_autorun(ctx: CommandContext) -> None:
+    """
+    Alterna el autorun de YouTube al iniciar el bot.
+    Uso: youtube_autorun
+    """
+    config = _load_config()
+    
+    # Asegurar que existe la sección youtube
+    if "youtube" not in config:
+        config["youtube"] = {}
+    
+    # Alternar el valor
+    current = config["youtube"].get("autorun", False)
+    config["youtube"]["autorun"] = not current
+    
+    # Guardar
+    _save_config(config)
+    
+    new_value = config["youtube"]["autorun"]
+    status = "activado" if new_value else "desactivado"
+    
+    ctx.success(f"YouTube autorun {status}")
+    if new_value:
+        ctx.print("YouTube se conectará automáticamente al iniciar el bot")
+    else:
+        ctx.print("YouTube NO se conectará automáticamente")
+
+
+async def cmd_youtube_help(ctx: CommandContext) -> None:
+    """
+    Muestra ayuda de comandos de YouTube.
+    Uso: yt help
+    """
+    from rich.panel import Panel
+    console = _get_console()
+    
+    help_text = """
+🎬 [bold cyan]Comandos de YouTube API:[/bold cyan]
+
+  [yellow]yapi[/yellow]             - 🚀 Conecta YouTube e inicia listener (TODO EN UNO)
+  [yellow]yt autorun[/yellow]       - Alterna el inicio automático de YouTube
+  [yellow]yt listener[/yellow]      - Inicia el listener de mensajes del chat
+  [yellow]yt stop_listener[/yellow] - Detiene el listener de mensajes
+  [yellow]yt logout[/yellow]        - 🚪 Cierra sesión y borra el token
+  [yellow]yt status[/yellow]        - Muestra el estado de YouTube y listener
+  [yellow]yt help[/yellow]          - Muestra esta ayuda
+
+[bold cyan]Características:[/bold cyan]
+  • Gestión automática de Chat ID con persistencia
+  • Monitoreo de nuevas transmisiones cada 60 segundos
+  • Notificación cuando cambia la transmisión activa
+  • Chat ID se guarda en [dim]data/youtube_bot/active_chat.json[/dim]
+
+[bold cyan]Ejemplos:[/bold cyan]
+  [dim]yapi[/dim]                  - Inicia todo el sistema automáticamente ⭐
+  [dim]yt autorun[/dim]            - Activa/desactiva el autorun
+  [dim]yt listener[/dim]           - Comienza a escuchar mensajes del chat
+  [dim]yt stop_listener[/dim]      - Detiene de escuchar mensajes
+  [dim]yt logout[/dim]             - Cierra sesión y requiere nueva autenticación
+  [dim]yt status[/dim]             - Ver estado de la conexión y monitoreo
+"""
+    
+    console.print(Panel(
+        help_text,
+        title="[bold cyan]YouTube API - Ayuda[/bold cyan]",
+        border_style="cyan"
+    ))
+
+
+async def cmd_youtube_listener(ctx: CommandContext) -> None:
+    """
+    Inicia el listener de mensajes del chat.
+    Uso: yt listener
+    """
+    console = _get_console()
+    yt = _get_youtube()
+    listener = _get_listener()
+    chat_manager = _get_chat_id_manager()
+    
+    # Verificar si ya hay un listener corriendo
+    if listener and listener.is_running:
+        ctx.warning("El listener ya está en ejecución")
+        return
+    
+    # Verificar conexión de YouTube
+    if not yt or not yt.is_connected():
+        ctx.error("YouTube API no está conectada")
+        ctx.print("Primero activa el autorun o conecta manualmente")
+        return
+    
+    try:
+        # Crear ChatIdManager si no existe
+        if not chat_manager:
+            from backend.services.youtube_api import ChatIdManager
+            chat_manager = ChatIdManager(yt.client, check_interval=60)
+            _set_chat_id_manager(chat_manager)
+            console.print("[info]📋 ChatIdManager creado[/info]")
+        
+        # Obtener chat ID (intenta cargar guardado primero)
+        console.print("[info]🔍 Buscando transmisión en vivo...[/info]")
+        
+        # Intentar cargar chat ID guardado
+        live_chat_id = chat_manager.load_saved_chat_id()
+        if live_chat_id:
+            console.print(f"[info]📂 Chat ID cargado desde archivo[/info]")
+        
+        # Actualizar/verificar chat ID
+        live_chat_id = chat_manager.update_chat_id(force_fetch=True)
+        
+        if not live_chat_id:
+            ctx.error("No hay transmisión en vivo activa")
+            return
+        
+        console.print(f"[success]✓ Chat encontrado: {live_chat_id[:20]}...[/success]")
+        
+        # Crear listener
+        from backend.services.youtube_api import (
+            YouTubeListener,
+            console_message_handler,
+            command_processor_handler
+        )
+        
+        listener = YouTubeListener(yt.client, live_chat_id)
+        
+        # Agregar handlers
+        listener.add_message_handler(console_message_handler)
+
+        async def _command_handler(message):
+            await command_processor_handler(message, yt.client, live_chat_id)
+
+        listener.add_message_handler(_command_handler)
+        
+        # No iniciar monitoreo: el chat ID queda fijo mientras el listener esté activo
+        
+        # Iniciar listener
+        await listener.start()
+        _set_listener(listener)
+        
+        console.print("\n" + "="*60)
+        ctx.success("Listener iniciado - Escuchando mensajes del chat")
+        console.print("="*60 + "\n")
+        
+    except Exception as e:
+        ctx.error(f"Error al iniciar listener: {str(e)}")
+
+
+async def cmd_youtube_stop_listener(ctx: CommandContext) -> None:
+    """
+    Detiene el listener de mensajes.
+    Uso: yt stop_listener
+    """
+    listener = _get_listener()
+    chat_manager = _get_chat_id_manager()
+    
+    if not listener:
+        ctx.warning("No hay ningún listener en ejecución")
+        return
+    
+    if not listener.is_running:
+        ctx.warning("El listener ya está detenido")
+        return
+    
+    try:
+        # Detener listener
+        await listener.stop()
+        _set_listener(None)
+        
+        # Detener monitoreo de chat ID
+        if chat_manager and chat_manager.is_monitoring:
+            await chat_manager.stop_monitoring()
+        
+        ctx.success("Listener y monitoreo detenidos")
+        
+    except Exception as e:
+        ctx.error(f"Error al detener listener: {str(e)}")
+
+
+async def cmd_youtube_status(ctx: CommandContext) -> None:
+    """
+    Muestra el estado de YouTube API y listener.
+    Uso: yt status
+    """
+    from rich.table import Table
+    console = _get_console()
+    
+    yt = _get_youtube()
+    listener = _get_listener()
+    chat_manager = _get_chat_id_manager()
+    config = _load_config()
+    
+    # Crear tabla
+    table = Table(title="YouTube API Status", show_header=True, header_style="bold magenta")
+    table.add_column("Propiedad", style="cyan", width=25)
+    table.add_column("Valor", style="green")
+    
+    # Estado de conexión
+    if yt and yt.is_connected():
+        table.add_row("Estado API", "✅ Conectado")
+        table.add_row("Credenciales", str(yt.config.credentials_path.name))
+        table.add_row("Token", str(yt.config.token_path.name))
+    else:
+        table.add_row("Estado API", "❌ Desconectado")
+    
+    # Estado del ChatIdManager
+    if chat_manager:
+        status = chat_manager.get_status()
+        table.add_row("ChatIdManager", "✅ Activo")
+        table.add_row("Monitoreo", "✅ Activo" if status['is_monitoring'] else "❌ Inactivo")
+        if status['current_chat_id']:
+            table.add_row("Chat ID actual", status['current_chat_id'][:20] + "...")
+        else:
+            table.add_row("Chat ID actual", "Sin transmisión")
+        table.add_row("Intervalo verificación", f"{status['check_interval']}s")
+    else:
+        table.add_row("ChatIdManager", "❌ No creado")
+    
+    # Estado del listener
+    if listener and listener.is_running:
+        stats = listener.get_stats()
+        table.add_row("Listener", "✅ Activo")
+        table.add_row("Mensajes procesados", str(stats['processed_messages_count']))
+        table.add_row("Poll interval", f"{stats['poll_interval_ms']}ms")
+    else:
+        table.add_row("Listener", "❌ Inactivo")
+    
+    # Configuración
+    autorun = config.get("youtube", {}).get("autorun", False)
+    table.add_row("Autorun", "✅ Activado" if autorun else "❌ Desactivado")
+    
+    console.print(table)
+
+
+# ============================================================================
+# DICCIONARIO DE COMANDOS YOUTUBE
+# ============================================================================
+
+YOUTUBE_COMMANDS = {
+    "yapi": cmd_youtube_yapi,
+    "autorun": cmd_youtube_autorun,
+    "listener": cmd_youtube_listener,
+    "stop_listener": cmd_youtube_stop_listener,
+    "logout": cmd_youtube_logout,
+    "status": cmd_youtube_status,
+    "help": cmd_youtube_help,
+}

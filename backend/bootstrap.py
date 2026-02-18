@@ -209,6 +209,7 @@ def _normalize_package_name(requirement: str) -> str:
 		'python-dotenv' -> 'dotenv'
 		'Pillow' -> 'PIL'
 		'pyyaml' -> 'yaml'
+		'google-auth' -> 'google.auth'
 	"""
 	# Eliminar versiones, extras, etc.
 	name = requirement.split(";")[0].split(">")[0].split("<")[0].split("=")[0].split("[")[0].strip()
@@ -220,6 +221,11 @@ def _normalize_package_name(requirement: str) -> str:
 		"pydantic-core": "pydantic",
 		"setuptools": "setuptools",
 		"wheel": "wheel",
+		"google-auth": "google.auth",
+		"google-auth-oauthlib": "google_auth_oauthlib",
+		"google-api-python-client": "googleapiclient",
+		"python-dotenv": "dotenv",
+		"discord.py": "discord",
 	}
 	
 	name_lower = name.lower()

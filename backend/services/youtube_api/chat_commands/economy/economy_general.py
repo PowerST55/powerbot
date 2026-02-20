@@ -5,12 +5,17 @@ Comandos de economía del chat de YouTube.
 import logging
 from typing import List
 
-from backend.managers.economy_manager import get_user_balance_by_id, get_user_balance_by_youtube_id
+from backend.managers.economy_manager import (
+	get_user_balance_by_id,
+	get_user_balance_by_youtube_id,
+	transfer_points,
+)
 from backend.managers.user_lookup_manager import (
 	find_user_by_global_id,
 	find_user_by_youtube_channel_id,
 	find_user_by_youtube_username,
 )
+from .economy_admin import process_admin_economy_command
 from ...config.economy import get_youtube_economy_config
 from ...send_message import send_chat_message
 from ...youtube_core import YouTubeClient
@@ -20,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 ECONOMY_COMMAND_ALIASES = {"puntos", "pews", "points", "balance", "pew"}
+TRANSFER_COMMAND_ALIASES = {"dar", "depositar", "transferir", "give"}
 
 
 def _format_points(points: int) -> str:
@@ -37,6 +43,68 @@ async def process_economy_command(
 	live_chat_id: str,
 ) -> bool:
 	"""Procesa comandos de economía. Retorna True si se manejó el comando."""
+	if await process_admin_economy_command(command, args, message, client, live_chat_id):
+		return True
+
+	if command in TRANSFER_COMMAND_ALIASES:
+		if len(args) < 2:
+			await send_chat_message(client, live_chat_id, "Uso: !dar <usuario o id> <cantidad>")
+			return True
+
+		sender = find_user_by_youtube_channel_id(message.author_channel_id)
+		if not sender:
+			await send_chat_message(
+				client,
+				live_chat_id,
+				f"No encontré usuario vinculado para {message.author_name}.",
+			)
+			return True
+
+		amount_raw = args[-1].strip()
+		target_query = " ".join(args[:-1]).strip()
+
+		if not target_query:
+			await send_chat_message(client, live_chat_id, "Uso: !dar <usuario o id> <cantidad>")
+			return True
+
+		if not amount_raw.isdigit() or int(amount_raw) <= 0:
+			await send_chat_message(client, live_chat_id, "La cantidad debe ser un número entero mayor a 0.")
+			return True
+
+		amount = int(amount_raw)
+
+		if target_query.isdigit():
+			target = find_user_by_global_id(int(target_query))
+		else:
+			target = find_user_by_youtube_username(target_query)
+			if not target and target_query.startswith("UC"):
+				target = find_user_by_youtube_channel_id(target_query)
+
+		if not target:
+			await send_chat_message(client, live_chat_id, f"No encontré al usuario '{target_query}'.")
+			return True
+
+		result = transfer_points(
+			from_user_id=sender.user_id,
+			to_user_id=target.user_id,
+			amount=amount,
+			guild_id=live_chat_id,
+			platform="youtube",
+		)
+
+		if not result.get("success"):
+			await send_chat_message(client, live_chat_id, result.get("error", "No se pudo realizar la transferencia."))
+			return True
+
+		to_name = target.youtube_profile.youtube_username if target.youtube_profile else target.display_name
+		from_points = int(result.get("from_balance", 0) or 0)
+		await send_chat_message(
+			client,
+			live_chat_id,
+			f"✅ Transferidos {_format_points(amount)} a @{to_name}. Tu nuevo balance: {_format_points(from_points)}.",
+		)
+		return True
+
 	if command not in ECONOMY_COMMAND_ALIASES:
 		return False
 

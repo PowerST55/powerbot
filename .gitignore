@@ -67,6 +67,10 @@ keys/
 *.log
 logs/
 
+# Avatares generados/descargados
+media/dc_avatars/
+media/yt_avatars/
+
 # Database
 *.db
 *.sqlite

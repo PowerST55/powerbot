@@ -127,6 +127,11 @@ async def cmd_help(ctx: CommandContext) -> None:
 	ctx.print("  colortest      - Prueba todos los colores disponibles")
 	ctx.print("  clean          - Limpia la consola")
 	ctx.print("  restart (rst)  - Reinicia el programa completamente")
+	ctx.print("  web <subcmd>   - Control del servidor web")
+	ctx.print("                   • web            - Alterna ON/OFF")
+	ctx.print("                   • web on         - Enciende servidor web")
+	ctx.print("                   • web off        - Apaga servidor web")
+	ctx.print("                   • web status     - Estado del servidor web")
 	ctx.print("  say <msg>      - Envia un mensaje a YouTube Live")
 	ctx.print("  yapi           - 🚀 Conecta YouTube e inicia listener (TODO EN UNO)")
 	ctx.print("  yt <subcmd>    - Comandos de YouTube API")
@@ -207,6 +212,12 @@ async def cmd_yapi(ctx: CommandContext) -> None:
 		ctx.error("Comando yapi no disponible")
 
 
+async def cmd_web(ctx: CommandContext) -> None:
+	"""Comando web - ejecuta subcomandos para controlar el servidor web."""
+	from .web.general import cmd_web as cmd_web_impl
+	await cmd_web_impl(ctx)
+
+
 async def cmd_say(ctx: CommandContext) -> None:
 	"""Comando say - envia un mensaje a YouTube Live."""
 	from .youtube.general import _get_listener, _get_youtube
@@ -251,6 +262,7 @@ _COMMAND_FUNCTIONS: Dict[str, Callable[[CommandContext], Any]] = {
 	"yt": cmd_yt,
 	"youtube": cmd_yt,
 	"yapi": cmd_yapi,
+	"web": cmd_web,
 	"help": cmd_help,
 	"exit": cmd_exit,
 }

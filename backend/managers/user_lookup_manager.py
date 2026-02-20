@@ -17,6 +17,7 @@ from typing import Optional, Dict, Any, Literal
 from backend.managers.user_manager import (
     get_discord_profile_by_discord_id,
     get_youtube_profile_by_channel_id,
+    get_youtube_profile_by_username,
     get_user_by_id,
     get_user_stats,
     DiscordProfile,
@@ -227,6 +228,33 @@ def find_user_by_youtube_channel_id(youtube_channel_id: str) -> Optional[UserLoo
     return None
 
 
+def find_user_by_youtube_username(youtube_username: str) -> Optional[UserLookupResult]:
+    """
+    Busca un usuario por nombre de usuario de YouTube (con o sin @).
+
+    Args:
+        youtube_username: Username de YouTube
+
+    Returns:
+        UserLookupResult si el usuario existe, None si no
+    """
+    if not youtube_username:
+        return None
+
+    candidate = str(youtube_username).strip().lstrip('@')
+    if not candidate:
+        return None
+
+    profile = get_youtube_profile_by_username(candidate)
+    if profile:
+        return UserLookupResult(
+            user_id=profile.user_id,
+            platform="youtube",
+            platform_id=profile.youtube_channel_id
+        )
+    return None
+
+
 def find_user_by_global_id(user_id: int) -> Optional[UserLookupResult]:
     """
     Busca un usuario por su ID global universal.
@@ -429,6 +457,7 @@ __all__ = [
     # Búsqueda por plataforma específica
     'find_user_by_discord_id',
     'find_user_by_youtube_channel_id',
+    'find_user_by_youtube_username',
     'find_user_by_global_id',
     
     # Búsqueda unificada

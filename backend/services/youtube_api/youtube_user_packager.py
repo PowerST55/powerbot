@@ -97,23 +97,32 @@ class UserPackager:
         if existing_profile:
             # Usuario existente: actualizar información
             user_id = existing_profile.user_id
-            
-            # Actualizar nombre de usuario y tipo si cambió
-            update_youtube_profile(
-                user_id=user_id,
-                youtube_username=username,
-                user_type=user_type,
+
+            has_profile_changes = (
+                existing_profile.youtube_username != username
+                or existing_profile.user_type != user_type
             )
-            
-            logger.info(
-                f"🔄 YouTube usuario actualizado: {username} "
-                f"(ID: {channel_id}, Tipo: {user_type})"
+
+            if has_profile_changes:
+                update_youtube_profile(
+                    user_id=user_id,
+                    youtube_username=username,
+                    user_type=user_type,
+                )
+                logger.debug(
+                    f"YouTube usuario actualizado: {username} "
+                    f"(ID: {channel_id}, Tipo: {user_type})"
+                )
+
+            avatar_url_remote = packed_data.get('avatar_url_remote')
+            has_avatar_change = bool(
+                avatar_url_remote
+                and avatar_url_remote != existing_profile.channel_avatar_url
             )
-            
-            # Intentar descargar/actualizar avatar
-            if packed_data.get('avatar_url_remote'):
+
+            if has_avatar_change:
                 try:
-                    UserPackager._download_and_update_avatar(user_id, channel_id, packed_data['avatar_url_remote'])
+                    UserPackager._download_and_update_avatar(user_id, channel_id, avatar_url_remote)
                 except Exception as e:
                     logger.warning(f"⚠️  Error descargando avatar para {channel_id}: {e}")
             
@@ -185,8 +194,8 @@ class UserPackager:
                     user_id=user_id,
                     channel_avatar_url=local_path,
                 )
-                
-                logger.info(f"✅ Avatar descargado: {channel_id} → {local_path}")
+
+                logger.debug(f"Avatar descargado: {channel_id} → {local_path}")
                 return True
             else:
                 logger.warning(f"⚠️  No se pudo descargar avatar para {channel_id}")

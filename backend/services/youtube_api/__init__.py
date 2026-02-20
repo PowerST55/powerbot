@@ -17,6 +17,8 @@ from .youtube_listener import (
 from .config import (
     ChatIdManager,
     create_chat_id_manager,
+    YouTubeEconomyConfig,
+    get_youtube_economy_config,
 )
 
 __all__ = [
@@ -32,4 +34,6 @@ __all__ = [
     "command_processor_handler",
     "ChatIdManager",
     "create_chat_id_manager",
+    "YouTubeEconomyConfig",
+    "get_youtube_economy_config",
 ]

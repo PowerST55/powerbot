@@ -45,7 +45,7 @@ def send_chat_message_sync(
 			if isinstance(response, dict):
 				# ✅ Mensaje enviado exitosamente - tenemos ID
 				if response.get("id"):
-					logger.info(f"✅ [Intento {attempt}] Mensaje enviado CONFIRMADO (ID: {response.get('id')})")
+					logger.debug(f"Mensaje enviado confirmado (intento {attempt}, ID: {response.get('id')})")
 					return True
 				
 				# 🔴 SSL error: reintentar una vez más

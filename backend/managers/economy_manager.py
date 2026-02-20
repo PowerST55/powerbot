@@ -226,6 +226,147 @@ def award_message_points(
 		conn.close()
 
 
+def award_youtube_message_points(
+	youtube_channel_id: str,
+	chat_id: str,
+	amount: int,
+	interval_seconds: int,
+	source_id: str | None = None,
+) -> Dict[str, Optional[int]]:
+	"""
+	Aumenta puntos por mensaje en YouTube con cooldown.
+	Usa wallets globales e idempotencia por source_id.
+	"""
+	if amount <= 0 or interval_seconds < 0:
+		return {
+			"awarded": 0,
+			"points_added": 0,
+			"global_points": None,
+		}
+
+	profile = get_youtube_profile_by_channel_id(str(youtube_channel_id))
+	if not profile:
+		return {
+			"awarded": 0,
+			"points_added": 0,
+			"global_points": None,
+		}
+
+	now = datetime.utcnow()
+	now_iso = now.isoformat()
+	chat_id_text = str(chat_id)
+
+	conn = get_connection()
+	try:
+		_ensure_earning_cooldown_table(conn)
+		_ensure_wallet_tables(conn)
+		_ensure_earning_events_table(conn)
+		conn.execute("BEGIN IMMEDIATE")
+
+		if source_id:
+			existing = conn.execute(
+				"SELECT 1 FROM earning_events WHERE platform = ? AND source_id = ?",
+				("youtube", source_id),
+			).fetchone()
+			if existing:
+				conn.rollback()
+				return {
+					"awarded": 0,
+					"points_added": 0,
+					"global_points": None,
+				}
+
+		row = conn.execute(
+			"SELECT last_earned_at FROM earning_cooldown WHERE user_id = ? AND guild_id = ?",
+			(profile.user_id, chat_id_text),
+		).fetchone()
+
+		if row:
+			try:
+				last_earned = datetime.fromisoformat(row["last_earned_at"])
+			except Exception:
+				last_earned = None
+			if last_earned:
+				elapsed = (now - last_earned).total_seconds()
+				if elapsed < interval_seconds:
+					conn.rollback()
+					return {
+						"awarded": 0,
+						"points_added": 0,
+						"global_points": None,
+					}
+
+		conn.execute(
+			"INSERT INTO wallets (user_id, balance, created_at, updated_at) VALUES (?, 0, ?, ?) "
+			"ON CONFLICT(user_id) DO NOTHING",
+			(profile.user_id, now_iso, now_iso),
+		)
+
+		conn.execute(
+			"UPDATE wallets SET balance = balance + ?, updated_at = ? WHERE user_id = ?",
+			(amount, now_iso, profile.user_id),
+		)
+
+		conn.execute(
+			"""
+			INSERT INTO wallet_ledger (user_id, amount, reason, platform, guild_id, channel_id, source_id, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			""",
+			(
+				profile.user_id,
+				amount,
+				"message_earning",
+				"youtube",
+				chat_id_text,
+				str(youtube_channel_id),
+				source_id,
+				now_iso,
+			),
+		)
+
+		if source_id:
+			conn.execute(
+				"INSERT INTO earning_events (platform, source_id, user_id, created_at) VALUES (?, ?, ?, ?)",
+				("youtube", source_id, profile.user_id, now_iso),
+			)
+
+		conn.execute(
+			"""
+			INSERT INTO earning_cooldown (user_id, guild_id, last_earned_at, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?)
+			ON CONFLICT(user_id, guild_id)
+			DO UPDATE SET last_earned_at = ?, updated_at = ?
+			""",
+			(
+				profile.user_id,
+				chat_id_text,
+				now_iso,
+				now_iso,
+				now_iso,
+				now_iso,
+				now_iso,
+			),
+		)
+
+		global_points = conn.execute(
+			"SELECT balance FROM wallets WHERE user_id = ?",
+			(profile.user_id,),
+		).fetchone()
+
+		conn.commit()
+
+		return {
+			"awarded": 1,
+			"points_added": amount,
+			"global_points": global_points["balance"] if global_points else None,
+		}
+	except Exception:
+		conn.rollback()
+		raise
+	finally:
+		conn.close()
+
+
 # ============================================================
 # FUNCIONES DE CONSULTA DE PUNTOS (ROBUSTAS)
 # ============================================================

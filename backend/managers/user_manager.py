@@ -368,6 +368,59 @@ def get_youtube_profile_by_channel_id(youtube_channel_id: str) -> Optional[YouTu
     return None
 
 
+def get_youtube_profile_by_username(youtube_username: str) -> Optional[YouTubeProfile]:
+    """
+    Obtiene el perfil YouTube por nombre de usuario (case-insensitive).
+
+    Args:
+        youtube_username: Nombre de usuario del canal (con o sin @)
+
+    Returns:
+        YouTubeProfile: Perfil encontrado o None
+    """
+    if not youtube_username:
+        return None
+
+    raw_candidate = str(youtube_username).strip().lower().lstrip('@')
+    normalized_candidate = ''.join(
+        char for char in raw_candidate if char.isalnum() or char in '-_'
+    )
+
+    if not raw_candidate and not normalized_candidate:
+        return None
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    row = None
+
+    # 1) Intentar exacto (por si en el futuro se guarda con símbolos)
+    if raw_candidate:
+        cursor.execute(
+            "SELECT * FROM youtube_profile WHERE LOWER(youtube_username) = ?",
+            (raw_candidate,)
+        )
+        row = cursor.fetchone()
+
+    # 2) Fallback normalizado (compatibilidad con usernames limpiados en BD)
+    if row is None and normalized_candidate and normalized_candidate != raw_candidate:
+        cursor.execute(
+            "SELECT * FROM youtube_profile WHERE LOWER(youtube_username) = ?",
+            (normalized_candidate,)
+        )
+        row = cursor.fetchone()
+
+    conn.close()
+
+    if row:
+        user_type = row.get('user_type', 'regular') if hasattr(row, 'get') else getattr(row, 'user_type', 'regular')
+        return YouTubeProfile(
+            row['id'], row['user_id'], row['youtube_channel_id'], row['youtube_username'],
+            row['channel_avatar_url'], row['subscribers'], user_type, row['created_at'], row['updated_at']
+        )
+    return None
+
+
 def get_youtube_profile_by_id(profile_id: int) -> Optional[YouTubeProfile]:
     """
     Obtiene un perfil YouTube por su ID de perfil.

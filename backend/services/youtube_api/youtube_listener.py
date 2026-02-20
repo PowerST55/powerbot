@@ -8,6 +8,7 @@ Incluye persistencia automática de usuarios.
 import asyncio
 import logging
 import ssl
+import hashlib
 from typing import Optional, Callable, Dict, Any, List, Set
 from datetime import datetime, timezone
 from googleapiclient.errors import HttpError
@@ -202,9 +203,9 @@ class YouTubeListener:
             if response:
                 items = response.get("items", [])
                 for item in items:
-                    msg_id = item.get("id")
-                    if msg_id:
-                        self._processed_messages.add(msg_id)
+                    msg_key = self._build_message_key(item)
+                    if msg_key:
+                        self._processed_messages.add(msg_key)
                 
                 # Guardar el page token para el siguiente fetch
                 self._next_page_token = response.get("nextPageToken")
@@ -214,6 +215,27 @@ class YouTubeListener:
         
         except Exception as e:
             logger.error(f"Error skipping existing messages: {e}")
+
+    def _build_message_key(self, item: Dict[str, Any]) -> Optional[str]:
+        """Construye clave única para deduplicar mensajes incluso si falta `id`."""
+        msg_id = item.get("id")
+        if msg_id:
+            return f"id:{msg_id}"
+
+        snippet = item.get("snippet", {})
+        author = item.get("authorDetails", {})
+        fallback_payload = "|".join([
+            str(snippet.get("publishedAt", "")),
+            str(author.get("channelId", "")),
+            str(snippet.get("textMessageDetails", {}).get("messageText", "")),
+            str(item.get("etag", "")),
+        ])
+
+        if not fallback_payload.strip("|"):
+            return None
+
+        digest = hashlib.sha1(fallback_payload.encode("utf-8", errors="ignore")).hexdigest()
+        return f"fallback:{digest}"
     
     async def _fetch_and_process_messages(self) -> None:
         """Obtiene y procesa nuevos mensajes con protección robusta."""
@@ -232,12 +254,14 @@ class YouTubeListener:
                 
                 for item in items:
                     try:
-                        msg_id = item.get("id")
-                        
+                        msg_key = self._build_message_key(item)
+                        if not msg_key:
+                            continue
+
                         # Filtrar mensajes ya procesados
-                        if msg_id and msg_id not in self._processed_messages:
-                            self._processed_messages.add(msg_id)
-                            
+                        if msg_key not in self._processed_messages:
+                            self._processed_messages.add(msg_key)
+
                             # Crear objeto mensaje
                             message = YouTubeMessage(item)
                             new_messages.append(message)
@@ -465,9 +489,14 @@ async def command_processor_handler(
     """
     Handler para procesar comandos del chat.
     """
+    normalized_message = (message.message or "")
+    for hidden_char in ("\u200b", "\u200c", "\u200d", "\ufeff"):
+        normalized_message = normalized_message.replace(hidden_char, "")
+    normalized_message = normalized_message.strip()
+
     # Verificar si el mensaje comienza con un prefijo de comando
-    if message.message.startswith("!"):
-        command_text = message.message[1:].strip()
+    if normalized_message.startswith("!"):
+        command_text = normalized_message[1:].strip()
         parts = command_text.split()
         
         if not parts:
@@ -476,7 +505,7 @@ async def command_processor_handler(
         command = parts[0].lower()
         args = parts[1:] if len(parts) > 1 else []
         
-        logger.info(f"Command detected: {command} with args: {args} from {message.author_name}")
+        logger.debug(f"Command detected: {command} with args: {args} from {message.author_name}")
 
         if not client or not live_chat_id:
             logger.warning("No client/live_chat_id provided for command processing")

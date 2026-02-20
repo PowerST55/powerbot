@@ -124,7 +124,7 @@ class AvatarManager:
             with open(filepath, 'wb') as f:
                 f.write(response.content)
             
-            logger.info(f"✅ Avatar cached locally ({platform}): {filename} ({content_length} bytes)")
+            logger.debug(f"Avatar cached locally ({platform}): {filename} ({content_length} bytes)")
             
             # ⭐ DEVOLVER LA URL REMOTA EN LUGAR DE RUTA LOCAL
             # Discord y otros servicios necesitan URLs HTTP/HTTPS

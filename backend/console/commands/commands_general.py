@@ -135,6 +135,7 @@ async def cmd_help(ctx: CommandContext) -> None:
 	ctx.print("                   • yt stop_listener- Detiene listener")
 	ctx.print("                   • yt logout       - Cierra sesión y borra token")
 	ctx.print("                   • yt status       - Estado de YouTube")
+	ctx.print("                   • yt set currency - Configura moneda de YouTube")
 	ctx.print("                   • yt help         - Ayuda de YouTube")
 	ctx.print("  help           - Muestra esta ayuda")
 	ctx.print("  exit           - Salir del programa")
@@ -173,7 +174,7 @@ async def cmd_exit(ctx: CommandContext) -> None:
 
 async def cmd_yt(ctx: CommandContext) -> None:
 	"""Comando yt - ejecuta subcomandos de YouTube API"""
-	from .commands_youtube import YOUTUBE_COMMANDS
+	from .youtube import YOUTUBE_COMMANDS
 	
 	if not ctx.args:
 		# Sin argumentos, mostrar ayuda
@@ -181,7 +182,7 @@ async def cmd_yt(ctx: CommandContext) -> None:
 			await YOUTUBE_COMMANDS["help"](ctx)
 		return
 	
-	subcommand = ctx.args[0]
+	subcommand = ctx.args[0].lstrip("/").lower()
 	yt_ctx = CommandContext(ctx.args[1:])
 	
 	if subcommand not in YOUTUBE_COMMANDS:
@@ -197,7 +198,7 @@ async def cmd_yt(ctx: CommandContext) -> None:
 
 async def cmd_yapi(ctx: CommandContext) -> None:
 	"""Comando yapi - Conecta YouTube API e inicia el listener automáticamente"""
-	from .commands_youtube import YOUTUBE_COMMANDS
+	from .youtube import YOUTUBE_COMMANDS
 	
 	# Ejecutar el comando yapi de YouTube
 	if "yapi" in YOUTUBE_COMMANDS:
@@ -208,7 +209,7 @@ async def cmd_yapi(ctx: CommandContext) -> None:
 
 async def cmd_say(ctx: CommandContext) -> None:
 	"""Comando say - envia un mensaje a YouTube Live."""
-	from .commands_youtube import _get_listener, _get_youtube
+	from .youtube.general import _get_listener, _get_youtube
 	from backend.services.youtube_api.send_message import send_chat_message
 
 	if not ctx.args:
